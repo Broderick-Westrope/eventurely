@@ -3,16 +3,21 @@ package main
 import (
 	"log"
 	"net/http"
+
+	flag "github.com/spf13/pflag"
 )
 
 func main() {
+	addr := flag.String("addr", ":4000", "HTTP network address")
+	flag.Parse()
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", home)
 	mux.HandleFunc("/event/create", eventCreate)
 	mux.HandleFunc("/event/view", eventView)
 
-	log.Print("Starting server on :4000")
+	log.Printf("Starting server on %s", *addr)
 
-	err := http.ListenAndServe(":4000", mux)
+	err := http.ListenAndServe(*addr, mux)
 	log.Fatal(err)
 }
