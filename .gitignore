@@ -158,4 +158,7 @@ fabric.properties
 
 # End of https://www.toptal.com/developers/gitignore/api/go,goland,visualstudiocode
 
+# SQLite Database Files
 *.db
+# Air Hot Reloader Build Files
+tmp/
