@@ -1,23 +1,28 @@
 package main
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 
 	flag "github.com/spf13/pflag"
 )
+
+type application struct {
+	logger *slog.Logger
+}
 
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
 	flag.Parse()
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/event/create", eventCreate)
-	mux.HandleFunc("/event/view", eventView)
+	app := &application{
+		logger: slog.New(slog.NewTextHandler(os.Stdout, nil)),
+	}
 
-	log.Printf("Starting server on %s", *addr)
+	app.logger.Info("starting server", slog.String("addr", *addr))
 
-	err := http.ListenAndServe(*addr, mux)
-	log.Fatal(err)
+	err := http.ListenAndServe(*addr, app.routes())
+	app.logger.Error(err.Error())
+	os.Exit(1)
 }
