@@ -33,7 +33,7 @@ func main() {
 
 	app := &application{
 		logger: logger,
-		events: models.NewEventModel(db),
+		events: models.NewEventRepository(db),
 	}
 
 	app.logger.Info("starting server", slog.String("addr", *addr))

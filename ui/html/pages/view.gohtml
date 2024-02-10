@@ -1,0 +1,11 @@
+{{define "title"}}{{.Event.Title}}{{end}}
+
+{{define "main"}}
+    {{with .Event}}
+        <div class='event'>
+            <strong>{{.Title}}</strong>
+            <p>{{.Description}}</p>
+            <p>{{.StartsAt}} - {{.EndsAt}}</p>
+        </div>
+    {{end}}
+{{end}}
