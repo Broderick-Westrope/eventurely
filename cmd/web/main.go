@@ -14,7 +14,7 @@ import (
 
 type application struct {
 	logger *slog.Logger
-	events *models.EventModel
+	events models.EventRepository
 }
 
 func main() {
@@ -33,7 +33,7 @@ func main() {
 
 	app := &application{
 		logger: logger,
-		events: &models.EventModel{DB: db},
+		events: models.NewEventModel(db),
 	}
 
 	app.logger.Info("starting server", slog.String("addr", *addr))

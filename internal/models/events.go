@@ -6,6 +6,15 @@ import (
 	"time"
 )
 
+type EventRepository interface {
+	// Create adds a new event to the database.
+	Create(ownerId int, title, description, location, uniqueLink string, startsAt, endsAt time.Time, privacySetting PrivacySetting) (int, error)
+	// Get returns the event with the specified ID.
+	Get(id int) (*Event, error)
+	// Upcoming returns all events that will start after the current time.
+	Upcoming() ([]Event, error)
+}
+
 type PrivacySetting string
 
 const (
@@ -27,11 +36,15 @@ type Event struct {
 	UpdatedAt      time.Time
 }
 
-type EventModel struct {
+type eventModel struct {
 	DB *sql.DB
 }
 
-func (m *EventModel) Insert(ownerId int, title, description, location, uniqueLink string, startsAt, endsAt time.Time, privacySetting PrivacySetting) (int, error) {
+func NewEventRepository(db *sql.DB) EventRepository {
+	return &eventModel{DB: db}
+}
+
+func (m *eventModel) Create(ownerId int, title, description, location, uniqueLink string, startsAt, endsAt time.Time, privacySetting PrivacySetting) (int, error) {
 	stmt := `INSERT INTO Event (OwnerID, Title, Description, StartsAt, EndsAt, Location, UniqueLink, PrivacySetting, CreatedAt, UpdatedAt)
     	VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
@@ -48,7 +61,7 @@ func (m *EventModel) Insert(ownerId int, title, description, location, uniqueLin
 	return int(id), nil
 }
 
-func (m *EventModel) Get(id int) (*Event, error) {
+func (m *eventModel) Get(id int) (*Event, error) {
 	stmt := `SELECT ID, OwnerID, Title, Description, StartsAt, EndsAt, Location, UniqueLink, PrivacySetting, CreatedAt, UpdatedAt
 	FROM Event WHERE ID = ?`
 
@@ -64,11 +77,11 @@ func (m *EventModel) Get(id int) (*Event, error) {
 	return &e, nil
 }
 
-func (m *EventModel) Latest() ([]Event, error) {
+func (m *eventModel) Upcoming() ([]Event, error) {
 	stmt := `SELECT ID, OwnerID, Title, Description, StartsAt, EndsAt, Location, UniqueLink, PrivacySetting, CreatedAt, UpdatedAt
-	FROM Event ORDER BY CreatedAt DESC LIMIT 10`
+	FROM Event WHERE StartsAt > ? ORDER BY StartsAt`
 
-	rows, err := m.DB.Query(stmt)
+	rows, err := m.DB.Query(stmt, time.Now())
 	if err != nil {
 		return nil, err
 	}
@@ -87,6 +100,6 @@ func (m *EventModel) Latest() ([]Event, error) {
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
-	
+
 	return events, nil
 }
