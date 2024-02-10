@@ -4,20 +4,9 @@
     <h2>Upcoming Events</h2>
     {{if .Events}}
         {{/*TODO:Replace with a card presentation style*/}}
-        <table>
-            <tr>
-                <th>Date</th>
-                <th>Event</th>
-                <th>Owner</th>
-            </tr>
-            {{range .Events}}
-                <tr>
-                    <td>{{.StartsAt}}</td>
-                    <td>{{.Title}}</td>
-                    <td>User {{.OwnerID}}</td>
-                </tr>
-            {{end}}
-        </table>
+        {{range .Events}}
+            {{template "event_card" .}}
+        {{end}}
     {{else}}
         <p>There's nothing to see here yet!</p>
     {{end}}

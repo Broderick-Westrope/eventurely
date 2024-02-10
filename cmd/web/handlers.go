@@ -27,6 +27,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		"./ui/html/base.gohtml",
 		"./ui/html/pages/home.gohtml",
 		"./ui/html/partials/nav.gohtml",
+		"./ui/html/partials/event_card.gohtml",
 	}
 
 	ts, err := template.ParseFiles(files...)
@@ -89,6 +90,7 @@ func (app *application) eventView(w http.ResponseWriter, r *http.Request) {
 		"./ui/html/base.gohtml",
 		"./ui/html/partials/nav.gohtml",
 		"./ui/html/pages/view.gohtml",
+		"./ui/html/partials/event_card.gohtml",
 	}
 
 	ts, err := template.ParseFiles(files...)
