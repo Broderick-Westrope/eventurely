@@ -1,0 +1,69 @@
+name: Go
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '0 10 * * 1' # run "At 10:00 on Monday"
+
+jobs:
+  run:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10 # just in case
+    strategy:
+      matrix:
+        go: [ 'stable', 'oldstable' ]
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go }}
+          check-latest: true
+
+      - name: Go Format
+        run: gofmt -s -w . && git diff --exit-code
+
+      - name: Go Vet
+        run: go vet ./...
+
+      - name: Go Tidy (check go.mod)
+        run: go mod tidy && git diff --exit-code
+
+      - name: Go Mod (download deps)
+        run: go mod download
+
+      - name: Go Mod Verify (verify go.sum)
+        run: go mod verify
+
+      - name: Buf CLI Install
+      - uses: bufbuild/buf-setup-action@v1
+
+      - name: Buf Lint
+        run: cd api/proto && buf lint && cd ../..
+
+      - name: Buf Breaking
+        run: buf breaking --against '.git#branch=main'
+
+      - name: Buf Generate
+        run: buf generate api/proto && git diff --exit-code
+
+      - name: Go Build
+        run: go build -v ./...
+
+      - name: Go Test
+        run: go test -v -count=1 -race -shuffle=on -coverprofile=coverage.txt ./...
+
+      - name: Go Benchmark (1x)
+        run: go test -v -shuffle=on -run=- -bench=. -benchtime=1x ./...
+
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Run govulncheck
+        run: govulncheck -test ./...
