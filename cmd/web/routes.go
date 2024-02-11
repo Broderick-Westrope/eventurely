@@ -11,6 +11,6 @@ func (app *application) routes() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.Handle(eventurelyv1connect.NewEventServiceHandler(app))
-	
+
 	return mux
 }
