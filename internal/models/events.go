@@ -8,11 +8,11 @@ import (
 
 type EventRepository interface {
 	// Create adds a new event to the database.
-	Create(ownerId int, title, description, location, uniqueLink string, startsAt, endsAt time.Time, privacySetting PrivacySetting) (int, error)
+	Create(ownerId int64, title, description, location, uniqueLink string, startsAt, endsAt time.Time, privacySetting PrivacySetting) (int64, error)
 	// Get returns the event with the specified ID.
-	Get(id int) (*Event, error)
-	// Upcoming returns all events that will start after the current time.
-	Upcoming() ([]Event, error)
+	Get(ID int64) (*Event, error)
+	// GetUpcoming returns all events that will start after the current time.
+	GetUpcoming(userID int64) ([]Event, error)
 }
 
 type PrivacySetting string
@@ -22,9 +22,19 @@ const (
 	PrivacySettingPrivate PrivacySetting = "Private"
 )
 
+// IsValidPrivacySetting checks if the provided PrivacySetting is valid (not UNSPECIFIED).
+func IsValidPrivacySetting(setting PrivacySetting) bool {
+	switch setting {
+	case PrivacySettingPublic, PrivacySettingPrivate:
+		return true
+	default:
+		return false
+	}
+}
+
 type Event struct {
-	ID             int
-	OwnerID        int
+	ID             int64
+	OwnerID        int64
 	Title          string
 	Description    string
 	StartsAt       time.Time
@@ -44,7 +54,7 @@ func NewEventRepository(db *sql.DB) EventRepository {
 	return &eventModel{DB: db}
 }
 
-func (m *eventModel) Create(ownerId int, title, description, location, uniqueLink string, startsAt, endsAt time.Time, privacySetting PrivacySetting) (int, error) {
+func (m *eventModel) Create(ownerId int64, title, description, location, uniqueLink string, startsAt, endsAt time.Time, privacySetting PrivacySetting) (int64, error) {
 	stmt := `INSERT INTO Event (OwnerID, Title, Description, StartsAt, EndsAt, Location, UniqueLink, PrivacySetting, CreatedAt, UpdatedAt)
     	VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
@@ -58,15 +68,15 @@ func (m *eventModel) Create(ownerId int, title, description, location, uniqueLin
 		return 0, err
 	}
 
-	return int(id), nil
+	return id, nil
 }
 
-func (m *eventModel) Get(id int) (*Event, error) {
+func (m *eventModel) Get(ID int64) (*Event, error) {
 	stmt := `SELECT ID, OwnerID, Title, Description, StartsAt, EndsAt, Location, UniqueLink, PrivacySetting, CreatedAt, UpdatedAt
 	FROM Event WHERE ID = ?`
 
 	var e Event
-	err := m.DB.QueryRow(stmt, id).Scan(&e.ID, &e.OwnerID, &e.Title, &e.Description, &e.StartsAt, &e.EndsAt, &e.Location, &e.UniqueLink, &e.PrivacySetting, &e.CreatedAt, &e.UpdatedAt)
+	err := m.DB.QueryRow(stmt, ID).Scan(&e.ID, &e.OwnerID, &e.Title, &e.Description, &e.StartsAt, &e.EndsAt, &e.Location, &e.UniqueLink, &e.PrivacySetting, &e.CreatedAt, &e.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNoRecord
@@ -77,11 +87,11 @@ func (m *eventModel) Get(id int) (*Event, error) {
 	return &e, nil
 }
 
-func (m *eventModel) Upcoming() ([]Event, error) {
+func (m *eventModel) GetUpcoming(userID int64) ([]Event, error) {
 	stmt := `SELECT ID, OwnerID, Title, Description, StartsAt, EndsAt, Location, UniqueLink, PrivacySetting, CreatedAt, UpdatedAt
-	FROM Event WHERE StartsAt > ? ORDER BY StartsAt`
+	FROM Event WHERE StartsAt > ? AND OwnerID = ? ORDER BY StartsAt`
 
-	rows, err := m.DB.Query(stmt, time.Now())
+	rows, err := m.DB.Query(stmt, time.Now(), userID)
 	if err != nil {
 		return nil, err
 	}

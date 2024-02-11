@@ -1,6 +1,19 @@
 package main
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/Broderick-Westrope/eventurely/internal/models"
+)
+
+// validatePrivacySetting ensures the setting is valid and returns an error if not.
+func validatePrivacySetting(setting models.PrivacySetting) error {
+	if !models.IsValidPrivacySetting(setting) {
+		return fmt.Errorf("privacy setting is not valid: %v", setting)
+	}
+	return nil
+}
 
 // The serverError helper writes a log entry at Error level (including the request
 // method and URI as attributes), then sends a generic 500 Internal Server Error

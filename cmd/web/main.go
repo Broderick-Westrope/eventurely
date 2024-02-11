@@ -6,10 +6,11 @@ import (
 	"net/http"
 	"os"
 
-	"eventurely/internal/models"
-
+	"github.com/Broderick-Westrope/eventurely/internal/models"
 	_ "github.com/mattn/go-sqlite3"
 	flag "github.com/spf13/pflag"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 )
 
 type application struct {
@@ -38,7 +39,10 @@ func main() {
 
 	app.logger.Info("starting server", slog.String("addr", *addr))
 
-	err = http.ListenAndServe(*addr, app.routes())
+	err = http.ListenAndServe(
+		*addr,
+		h2c.NewHandler(app.routes(), &http2.Server{}),
+	)
 	app.logger.Error(err.Error())
 	os.Exit(1)
 }

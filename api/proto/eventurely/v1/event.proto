@@ -1,0 +1,54 @@
+syntax = 'proto3';
+
+import "google/protobuf/timestamp.proto";
+
+package eventurely.v1;
+
+service EventService {
+  rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
+  rpc GetEvent(GetEventRequest) returns (GetEventResponse);
+  rpc GetUpcomingEvents(GetUpcomingEventsRequest) returns (GetUpcomingEventsResponse);
+}
+
+message Event {
+  int64 id = 1;
+  int64 owner_id = 2;
+  string title = 3;
+  string description = 4;
+  google.protobuf.Timestamp starts_at = 5;
+  google.protobuf.Timestamp ends_at = 6;
+  string location = 7;
+  string unique_link = 8;
+  string privacy_setting = 9;
+}
+
+message CreateEventRequest {
+  int64 owner_id = 1;
+  string title = 2;
+  string description = 3;
+  google.protobuf.Timestamp starts_at = 4;
+  google.protobuf.Timestamp ends_at = 5;
+  string location = 6;
+  string unique_link = 7;
+  string privacy_setting = 8;
+}
+
+message CreateEventResponse {
+  int64 id = 1;
+}
+
+message GetEventRequest {
+  int64 id = 1;
+}
+
+message GetEventResponse {
+  Event event = 1;
+}
+
+message GetUpcomingEventsRequest {
+  int64 user_id = 1;
+}
+
+message GetUpcomingEventsResponse {
+  repeated Event events = 1;
+}

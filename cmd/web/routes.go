@@ -1,17 +1,16 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/Broderick-Westrope/eventurely/gen/eventurely/v1/eventurelyv1connect"
+)
 
 // The routes() method returns a servemux containing our application routes.
 func (app *application) routes() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
-
-	mux.HandleFunc("/", app.home)
-	mux.HandleFunc("/event/view", app.eventView)
-	mux.HandleFunc("/event/create", app.eventCreate)
-
+	mux.Handle(eventurelyv1connect.NewEventServiceHandler(app))
+	
 	return mux
 }

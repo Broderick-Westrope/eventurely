@@ -1,108 +1,97 @@
 package main
 
 import (
-	"errors"
-	"fmt"
-	"html/template"
-	"net/http"
-	"strconv"
-	"time"
+	"context"
 
-	"eventurely/internal/models"
+	"connectrpc.com/connect"
+	v1 "github.com/Broderick-Westrope/eventurely/gen/eventurely/v1"
+	"github.com/Broderick-Westrope/eventurely/internal/models"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
-	}
-
-	events, err := app.events.Upcoming()
+func (app *application) CreateEvent(
+	ctx context.Context,
+	req *connect.Request[v1.CreateEventRequest],
+) (*connect.Response[v1.CreateEventResponse], error) {
+	privacySetting := models.PrivacySetting(req.Msg.GetPrivacySetting())
+	err := validatePrivacySetting(privacySetting)
 	if err != nil {
-		app.serverError(w, r, err)
-		return
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	files := []string{
-		"./ui/html/base.gohtml",
-		"./ui/html/pages/home.gohtml",
-		"./ui/html/partials/nav.gohtml",
-		"./ui/html/partials/event_card.gohtml",
-	}
-
-	ts, err := template.ParseFiles(files...)
+	id, err := app.events.Create(
+		req.Msg.GetOwnerId(),
+		req.Msg.GetTitle(),
+		req.Msg.GetDescription(),
+		req.Msg.GetLocation(),
+		req.Msg.GetUniqueLink(),
+		req.Msg.GetStartsAt().AsTime(),
+		req.Msg.GetEndsAt().AsTime(),
+		privacySetting,
+	)
 	if err != nil {
-		app.serverError(w, r, err)
-		return
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	data := templateData{Events: events}
-
-	err = ts.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		app.serverError(w, r, err)
-	}
+	return &connect.Response[v1.CreateEventResponse]{
+		Msg: &v1.CreateEventResponse{
+			Id: id,
+		},
+	}, nil
 }
 
-func (app *application) eventCreate(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		w.Header().Set("Allow", "POST")
-		app.clientError(w, http.StatusMethodNotAllowed)
-		return
-	}
-
-	ownerID := 1
-	title := "My Birthday!"
-	description := "It's my birthday and I'll cry if I want to."
-	location := "The Party Place"
-	uniqueLink := "my-birthday-" + strconv.Itoa(int(time.Now().Unix()))
-	startsAt := time.Date(2025, time.January, 1, 0, 0, 0, 0, time.UTC)
-	endsAt := time.Date(2025, time.January, 1, 23, 59, 59, 0, time.UTC)
-	privacySetting := models.PrivacySettingPublic
-
-	id, err := app.events.Create(ownerID, title, description, location, uniqueLink, startsAt, endsAt, privacySetting)
+func (app *application) GetEvent(
+	ctx context.Context,
+	req *connect.Request[v1.GetEventRequest],
+) (*connect.Response[v1.GetEventResponse], error) {
+	event, err := app.events.Get(req.Msg.GetId())
 	if err != nil {
-		app.serverError(w, r, err)
-		return
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/event/view?id=%d", id), http.StatusSeeOther)
+	return &connect.Response[v1.GetEventResponse]{
+		Msg: &v1.GetEventResponse{
+			Event: &v1.Event{
+				Id:             event.ID,
+				OwnerId:        event.OwnerID,
+				Title:          event.Title,
+				Description:    event.Description,
+				StartsAt:       timestamppb.New(event.StartsAt),
+				EndsAt:         timestamppb.New(event.EndsAt),
+				Location:       event.Location,
+				UniqueLink:     event.UniqueLink,
+				PrivacySetting: string(event.PrivacySetting),
+			},
+		},
+	}, nil
 }
 
-func (app *application) eventView(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
-	if err != nil || id < 1 {
-		app.notFound(w)
-		return
-	}
-
-	event, err := app.events.Get(id)
+func (app *application) GetUpcomingEvents(
+	ctx context.Context, req *connect.Request[v1.GetUpcomingEventsRequest],
+) (*connect.Response[v1.GetUpcomingEventsResponse], error) {
+	events, err := app.events.GetUpcoming(req.Msg.GetUserId())
 	if err != nil {
-		if errors.Is(err, models.ErrNoRecord) {
-			app.notFound(w)
-		} else {
-			app.serverError(w, r, err)
-		}
-		return
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	files := []string{
-		"./ui/html/base.gohtml",
-		"./ui/html/partials/nav.gohtml",
-		"./ui/html/pages/view.gohtml",
-		"./ui/html/partials/event_card.gohtml",
+	var pbEvents []*v1.Event
+	for _, event := range events {
+		pbEvents = append(pbEvents, &v1.Event{
+			Id:             event.ID,
+			OwnerId:        event.OwnerID,
+			Title:          event.Title,
+			Description:    event.Description,
+			StartsAt:       timestamppb.New(event.StartsAt),
+			EndsAt:         timestamppb.New(event.EndsAt),
+			Location:       event.Location,
+			UniqueLink:     event.UniqueLink,
+			PrivacySetting: string(event.PrivacySetting),
+		})
 	}
 
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, r, err)
-		return
-	}
-
-	data := templateData{Event: event}
-
-	err = ts.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		app.serverError(w, r, err)
-	}
+	return &connect.Response[v1.GetUpcomingEventsResponse]{
+		Msg: &v1.GetUpcomingEventsResponse{
+			Events: pbEvents,
+		},
+	}, nil
 }
