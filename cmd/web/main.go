@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"connectrpc.com/connect"
 	"github.com/Broderick-Westrope/eventurely/internal/models"
 	_ "github.com/mattn/go-sqlite3"
 	flag "github.com/spf13/pflag"
@@ -39,9 +40,13 @@ func main() {
 
 	app.logger.Info("starting server", slog.String("addr", *addr))
 
+	opts := connect.WithInterceptors(
+		app.loggingInterceptor(),
+	)
+
 	err = http.ListenAndServe(
 		*addr,
-		h2c.NewHandler(app.routes(), &http2.Server{}),
+		h2c.NewHandler(app.routes(opts), &http2.Server{}),
 	)
 	app.logger.Error(err.Error())
 	os.Exit(1)
