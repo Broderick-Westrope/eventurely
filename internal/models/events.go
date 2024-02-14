@@ -11,8 +11,8 @@ type EventRepository interface {
 	Create(ownerId int64, title, description, location, uniqueLink string, startsAt, endsAt time.Time, privacySetting PrivacySetting) (int64, error)
 	// Get returns the event with the specified ID.
 	Get(ID int64) (*Event, error)
-	// GetUpcoming returns all events that will start after the current time.
-	GetUpcoming(userID int64) ([]Event, error)
+	// ListUpcomingOwned returns all events that will start after the current time.
+	ListUpcomingOwned(userID int64) ([]Event, error)
 }
 
 type PrivacySetting string
@@ -87,7 +87,7 @@ func (m *eventModel) Get(ID int64) (*Event, error) {
 	return &e, nil
 }
 
-func (m *eventModel) GetUpcoming(userID int64) ([]Event, error) {
+func (m *eventModel) ListUpcomingOwned(userID int64) ([]Event, error) {
 	stmt := `SELECT ID, OwnerID, Title, Description, StartsAt, EndsAt, Location, UniqueLink, PrivacySetting, CreatedAt, UpdatedAt
 	FROM Event WHERE StartsAt > ? AND OwnerID = ? ORDER BY StartsAt`
 

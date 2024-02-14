@@ -70,10 +70,11 @@ func (app *application) GetEvent(
 	}, nil
 }
 
-func (app *application) GetUpcomingEvents(
-	ctx context.Context, req *connect.Request[v1.GetUpcomingEventsRequest],
-) (*connect.Response[v1.GetUpcomingEventsResponse], error) {
-	events, err := app.events.GetUpcoming(req.Msg.GetUserId())
+func (app *application) ListUpcomingOwnedEvents(
+	ctx context.Context,
+	req *connect.Request[v1.ListUpcomingOwnedEventsRequest],
+) (*connect.Response[v1.ListUpcomingOwnedEventsResponse], error) {
+	events, err := app.events.ListUpcomingOwned(req.Msg.GetUserId())
 	if err != nil {
 		return nil, app.serverError(req, err)
 	}
@@ -93,8 +94,8 @@ func (app *application) GetUpcomingEvents(
 		})
 	}
 
-	return &connect.Response[v1.GetUpcomingEventsResponse]{
-		Msg: &v1.GetUpcomingEventsResponse{
+	return &connect.Response[v1.ListUpcomingOwnedEventsResponse]{
+		Msg: &v1.ListUpcomingOwnedEventsResponse{
 			Events: pbEvents,
 		},
 	}, nil

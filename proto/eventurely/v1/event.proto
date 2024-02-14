@@ -7,7 +7,7 @@ package eventurely.v1;
 service EventService {
   rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
   rpc GetEvent(GetEventRequest) returns (GetEventResponse);
-  rpc GetUpcomingEvents(GetUpcomingEventsRequest) returns (GetUpcomingEventsResponse);
+  rpc ListUpcomingOwnedEvents(ListUpcomingOwnedEventsRequest) returns (ListUpcomingOwnedEventsResponse);
 }
 
 message Event {
@@ -45,10 +45,10 @@ message GetEventResponse {
   Event event = 1;
 }
 
-message GetUpcomingEventsRequest {
+message ListUpcomingOwnedEventsRequest {
   int64 user_id = 1;
 }
 
-message GetUpcomingEventsResponse {
+message ListUpcomingOwnedEventsResponse {
   repeated Event events = 1;
 }

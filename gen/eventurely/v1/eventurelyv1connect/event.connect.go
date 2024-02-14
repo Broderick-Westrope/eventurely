@@ -38,24 +38,24 @@ const (
 	EventServiceCreateEventProcedure = "/eventurely.v1.EventService/CreateEvent"
 	// EventServiceGetEventProcedure is the fully-qualified name of the EventService's GetEvent RPC.
 	EventServiceGetEventProcedure = "/eventurely.v1.EventService/GetEvent"
-	// EventServiceGetUpcomingEventsProcedure is the fully-qualified name of the EventService's
-	// GetUpcomingEvents RPC.
-	EventServiceGetUpcomingEventsProcedure = "/eventurely.v1.EventService/GetUpcomingEvents"
+	// EventServiceListUpcomingOwnedEventsProcedure is the fully-qualified name of the EventService's
+	// ListUpcomingOwnedEvents RPC.
+	EventServiceListUpcomingOwnedEventsProcedure = "/eventurely.v1.EventService/ListUpcomingOwnedEvents"
 )
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
 var (
-	eventServiceServiceDescriptor                 = v1.File_eventurely_v1_event_proto.Services().ByName("EventService")
-	eventServiceCreateEventMethodDescriptor       = eventServiceServiceDescriptor.Methods().ByName("CreateEvent")
-	eventServiceGetEventMethodDescriptor          = eventServiceServiceDescriptor.Methods().ByName("GetEvent")
-	eventServiceGetUpcomingEventsMethodDescriptor = eventServiceServiceDescriptor.Methods().ByName("GetUpcomingEvents")
+	eventServiceServiceDescriptor                       = v1.File_eventurely_v1_event_proto.Services().ByName("EventService")
+	eventServiceCreateEventMethodDescriptor             = eventServiceServiceDescriptor.Methods().ByName("CreateEvent")
+	eventServiceGetEventMethodDescriptor                = eventServiceServiceDescriptor.Methods().ByName("GetEvent")
+	eventServiceListUpcomingOwnedEventsMethodDescriptor = eventServiceServiceDescriptor.Methods().ByName("ListUpcomingOwnedEvents")
 )
 
 // EventServiceClient is a client for the eventurely.v1.EventService service.
 type EventServiceClient interface {
 	CreateEvent(context.Context, *connect.Request[v1.CreateEventRequest]) (*connect.Response[v1.CreateEventResponse], error)
 	GetEvent(context.Context, *connect.Request[v1.GetEventRequest]) (*connect.Response[v1.GetEventResponse], error)
-	GetUpcomingEvents(context.Context, *connect.Request[v1.GetUpcomingEventsRequest]) (*connect.Response[v1.GetUpcomingEventsResponse], error)
+	ListUpcomingOwnedEvents(context.Context, *connect.Request[v1.ListUpcomingOwnedEventsRequest]) (*connect.Response[v1.ListUpcomingOwnedEventsResponse], error)
 }
 
 // NewEventServiceClient constructs a client for the eventurely.v1.EventService service. By default,
@@ -80,10 +80,10 @@ func NewEventServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(eventServiceGetEventMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
-		getUpcomingEvents: connect.NewClient[v1.GetUpcomingEventsRequest, v1.GetUpcomingEventsResponse](
+		listUpcomingOwnedEvents: connect.NewClient[v1.ListUpcomingOwnedEventsRequest, v1.ListUpcomingOwnedEventsResponse](
 			httpClient,
-			baseURL+EventServiceGetUpcomingEventsProcedure,
-			connect.WithSchema(eventServiceGetUpcomingEventsMethodDescriptor),
+			baseURL+EventServiceListUpcomingOwnedEventsProcedure,
+			connect.WithSchema(eventServiceListUpcomingOwnedEventsMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -91,9 +91,9 @@ func NewEventServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 
 // eventServiceClient implements EventServiceClient.
 type eventServiceClient struct {
-	createEvent       *connect.Client[v1.CreateEventRequest, v1.CreateEventResponse]
-	getEvent          *connect.Client[v1.GetEventRequest, v1.GetEventResponse]
-	getUpcomingEvents *connect.Client[v1.GetUpcomingEventsRequest, v1.GetUpcomingEventsResponse]
+	createEvent             *connect.Client[v1.CreateEventRequest, v1.CreateEventResponse]
+	getEvent                *connect.Client[v1.GetEventRequest, v1.GetEventResponse]
+	listUpcomingOwnedEvents *connect.Client[v1.ListUpcomingOwnedEventsRequest, v1.ListUpcomingOwnedEventsResponse]
 }
 
 // CreateEvent calls eventurely.v1.EventService.CreateEvent.
@@ -106,16 +106,16 @@ func (c *eventServiceClient) GetEvent(ctx context.Context, req *connect.Request[
 	return c.getEvent.CallUnary(ctx, req)
 }
 
-// GetUpcomingEvents calls eventurely.v1.EventService.GetUpcomingEvents.
-func (c *eventServiceClient) GetUpcomingEvents(ctx context.Context, req *connect.Request[v1.GetUpcomingEventsRequest]) (*connect.Response[v1.GetUpcomingEventsResponse], error) {
-	return c.getUpcomingEvents.CallUnary(ctx, req)
+// ListUpcomingOwnedEvents calls eventurely.v1.EventService.ListUpcomingOwnedEvents.
+func (c *eventServiceClient) ListUpcomingOwnedEvents(ctx context.Context, req *connect.Request[v1.ListUpcomingOwnedEventsRequest]) (*connect.Response[v1.ListUpcomingOwnedEventsResponse], error) {
+	return c.listUpcomingOwnedEvents.CallUnary(ctx, req)
 }
 
 // EventServiceHandler is an implementation of the eventurely.v1.EventService service.
 type EventServiceHandler interface {
 	CreateEvent(context.Context, *connect.Request[v1.CreateEventRequest]) (*connect.Response[v1.CreateEventResponse], error)
 	GetEvent(context.Context, *connect.Request[v1.GetEventRequest]) (*connect.Response[v1.GetEventResponse], error)
-	GetUpcomingEvents(context.Context, *connect.Request[v1.GetUpcomingEventsRequest]) (*connect.Response[v1.GetUpcomingEventsResponse], error)
+	ListUpcomingOwnedEvents(context.Context, *connect.Request[v1.ListUpcomingOwnedEventsRequest]) (*connect.Response[v1.ListUpcomingOwnedEventsResponse], error)
 }
 
 // NewEventServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -136,10 +136,10 @@ func NewEventServiceHandler(svc EventServiceHandler, opts ...connect.HandlerOpti
 		connect.WithSchema(eventServiceGetEventMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
-	eventServiceGetUpcomingEventsHandler := connect.NewUnaryHandler(
-		EventServiceGetUpcomingEventsProcedure,
-		svc.GetUpcomingEvents,
-		connect.WithSchema(eventServiceGetUpcomingEventsMethodDescriptor),
+	eventServiceListUpcomingOwnedEventsHandler := connect.NewUnaryHandler(
+		EventServiceListUpcomingOwnedEventsProcedure,
+		svc.ListUpcomingOwnedEvents,
+		connect.WithSchema(eventServiceListUpcomingOwnedEventsMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/eventurely.v1.EventService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -148,8 +148,8 @@ func NewEventServiceHandler(svc EventServiceHandler, opts ...connect.HandlerOpti
 			eventServiceCreateEventHandler.ServeHTTP(w, r)
 		case EventServiceGetEventProcedure:
 			eventServiceGetEventHandler.ServeHTTP(w, r)
-		case EventServiceGetUpcomingEventsProcedure:
-			eventServiceGetUpcomingEventsHandler.ServeHTTP(w, r)
+		case EventServiceListUpcomingOwnedEventsProcedure:
+			eventServiceListUpcomingOwnedEventsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -167,6 +167,6 @@ func (UnimplementedEventServiceHandler) GetEvent(context.Context, *connect.Reque
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("eventurely.v1.EventService.GetEvent is not implemented"))
 }
 
-func (UnimplementedEventServiceHandler) GetUpcomingEvents(context.Context, *connect.Request[v1.GetUpcomingEventsRequest]) (*connect.Response[v1.GetUpcomingEventsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("eventurely.v1.EventService.GetUpcomingEvents is not implemented"))
+func (UnimplementedEventServiceHandler) ListUpcomingOwnedEvents(context.Context, *connect.Request[v1.ListUpcomingOwnedEventsRequest]) (*connect.Response[v1.ListUpcomingOwnedEventsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("eventurely.v1.EventService.ListUpcomingOwnedEvents is not implemented"))
 }
