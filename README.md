@@ -63,3 +63,50 @@ As an engineer, I want to...
 
 #### Web API
 
+##### Endpoints
+
+The following endpoints are divided by the views/screens they are most associated with. This does not mean they are restricted to those views.
+
+**Welcome/Login/Signup:**
+
+Coming soon...
+
+**View/Create/Edit:**
+
+- [x] **EventService.Get**: get an event.
+- [x] **EventService.Create**: create a new event.
+- [ ] **EventService.Update**: edit an event that the user owns.
+- [ ] **EventService.Delete**: delete an event that the user owns.
+- [ ] invite a user to an event.
+  - ! This (and similar invite endpoints) will likely not be its own endpoint, but rather a part of the event creation/editing process.
+
+**Pending Invites:**
+
+_NOTE: This will default to invites that have not been responded to, but filtering will be available._
+
+- [ ] **EventService.ListUpcomingInvited**: get the event & invitation for each upcoming event that a user has been invited to.
+  - This should take a filter, and default to only showing events the user has not responded to.
+- [ ] update the RSVP status of an invitation.
+
+**Upcoming:**
+
+- [ ] **EventService.ListUpcomingInvited**: get the event & invitation for each upcoming event that a user has been invited to.
+  - This should take a filter, and default to only showing events the user had responded "Yes" to.
+
+**Archive:**
+
+- [ ] **EventService.ListPast**: get the event & invitation for each past event that a user has been invited to or owned.
+  - This should take a filter, and default to showing all events.
+
+**Organising:**
+
+- [ ] **EventService.ListUpcomingOwned**: get the event & invitation for each event that a user owns.
+  - This should take a filter, and default to showing all events.
+
+**Connections:**
+
+Coming soon...
+
+**Settings:**
+
+Coming soon...
