@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 
 	"connectrpc.com/connect"
 	v1 "github.com/Broderick-Westrope/eventurely/gen/eventurely/v1"
@@ -30,7 +31,7 @@ func (app *application) CreateEvent(
 		privacySetting,
 	)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, app.serverError(req, err)
 	}
 
 	return &connect.Response[v1.CreateEventResponse]{
@@ -46,7 +47,10 @@ func (app *application) GetEvent(
 ) (*connect.Response[v1.GetEventResponse], error) {
 	event, err := app.events.Get(req.Msg.GetId())
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		if errors.Is(err, models.ErrNoRecord) {
+			return nil, connect.NewError(connect.CodeNotFound, err)
+		}
+		return nil, app.serverError(req, err)
 	}
 
 	return &connect.Response[v1.GetEventResponse]{
@@ -71,7 +75,7 @@ func (app *application) GetUpcomingEvents(
 ) (*connect.Response[v1.GetUpcomingEventsResponse], error) {
 	events, err := app.events.GetUpcoming(req.Msg.GetUserId())
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, app.serverError(req, err)
 	}
 
 	var pbEvents []*v1.Event
