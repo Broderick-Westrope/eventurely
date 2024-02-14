@@ -29,6 +29,8 @@ As a guest, I want to...
 - [ ] view past events that I owned or was invited to.
 - [ ] create an account, becoming a registered user, without losing any of my event data.
 
+_NOTE: Guest functionality will be added at a later date._
+
 As a registered user, I want to...
 
 - [ ] log in to my account.
@@ -84,24 +86,24 @@ Coming soon...
 
 _NOTE: This will default to invites that have not been responded to, but filtering will be available._
 
-- [ ] **EventService.ListUpcomingInvited**: get the event & invitation for each upcoming event that a user has been invited to.
+- [x] **EventService.ListUpcomingInvited**: get the event & invitation for each upcoming event that a user has been invited to.
   - This should take a filter, and default to only showing events the user has not responded to.
 - [ ] update the RSVP status of an invitation.
 
 **Upcoming:**
 
-- [ ] **EventService.ListUpcomingInvited**: get the event & invitation for each upcoming event that a user has been invited to.
-  - This should take a filter, and default to only showing events the user had responded "Yes" to.
+- [x] **EventService.ListUpcomingInvited**: get the event & invitation for each upcoming event that a user has been invited to.
+  - [ ] This should take a filter, and default to only showing events the user had responded "Yes" to.
 
 **Archive:**
 
 - [ ] **EventService.ListPast**: get the event & invitation for each past event that a user has been invited to or owned.
-  - This should take a filter, and default to showing all events.
+  - [ ] This should take a filter, and default to showing all events.
 
 **Organising:**
 
-- [ ] **EventService.ListUpcomingOwned**: get the event & invitation for each event that a user owns.
-  - This should take a filter, and default to showing all events.
+- [x] **EventService.ListUpcomingOwned**: get the event & invitation for each event that a user owns.
+  - [ ] This should take a filter, and default to showing all events.
 
 **Connections:**
 

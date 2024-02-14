@@ -8,7 +8,10 @@ service EventService {
   rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
   rpc GetEvent(GetEventRequest) returns (GetEventResponse);
   rpc ListUpcomingOwnedEvents(ListUpcomingOwnedEventsRequest) returns (ListUpcomingOwnedEventsResponse);
+  rpc ListUpcomingInvitedEvents(ListUpcomingInvitedEventsRequest) returns (ListUpcomingInvitedEventsResponse);
 }
+
+// MODELS
 
 message Event {
   int64 id = 1;
@@ -21,6 +24,13 @@ message Event {
   string unique_link = 8;
   string privacy_setting = 9;
 }
+
+message InvitedEvent {
+  Event event = 1;
+  string status = 2;
+}
+
+// REQUESTS & RESPONSES
 
 message CreateEventRequest {
   int64 owner_id = 1;
@@ -51,4 +61,12 @@ message ListUpcomingOwnedEventsRequest {
 
 message ListUpcomingOwnedEventsResponse {
   repeated Event events = 1;
+}
+
+message ListUpcomingInvitedEventsRequest {
+  int64 user_id = 1;
+}
+
+message ListUpcomingInvitedEventsResponse {
+  repeated InvitedEvent events = 1;
 }

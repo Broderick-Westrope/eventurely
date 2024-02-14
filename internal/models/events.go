@@ -13,6 +13,8 @@ type EventRepository interface {
 	Get(ID int64) (*Event, error)
 	// ListUpcomingOwned returns all events that will start after the current time.
 	ListUpcomingOwned(userID int64) ([]Event, error)
+	// ListUpcomingInvited returns all events that the user is invited to and will start after the current time.
+	ListUpcomingInvited(userID int64) ([]InvitedEvent, error)
 }
 
 type PrivacySetting string
@@ -44,6 +46,11 @@ type Event struct {
 	PrivacySetting PrivacySetting
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
+}
+
+type InvitedEvent struct {
+	Event
+	Status string
 }
 
 type eventModel struct {
@@ -101,6 +108,35 @@ func (m *eventModel) ListUpcomingOwned(userID int64) ([]Event, error) {
 	for rows.Next() {
 		var e Event
 		err = rows.Scan(&e.ID, &e.OwnerID, &e.Title, &e.Description, &e.StartsAt, &e.EndsAt, &e.Location, &e.UniqueLink, &e.PrivacySetting, &e.CreatedAt, &e.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, e)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return events, nil
+}
+
+func (m *eventModel) ListUpcomingInvited(userID int64) ([]InvitedEvent, error) {
+	stmt := `SELECT e.ID, e.OwnerID, e.Title, e.Description, e.StartsAt, e.EndsAt, e.Location, e.UniqueLink, e.PrivacySetting, e.CreatedAt, e.UpdatedAt, i.Status
+	FROM Event e
+	JOIN Invitation i ON e.ID = i.EventID
+	WHERE e.StartsAt > ? AND i.UserID = ? ORDER BY e.StartsAt`
+
+	rows, err := m.DB.Query(stmt, time.Now(), userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var events []InvitedEvent
+	for rows.Next() {
+		var e InvitedEvent
+		err = rows.Scan(&e.ID, &e.OwnerID, &e.Title, &e.Description, &e.StartsAt, &e.EndsAt, &e.Location, &e.UniqueLink, &e.PrivacySetting, &e.CreatedAt, &e.UpdatedAt, &e.Status)
 		if err != nil {
 			return nil, err
 		}
