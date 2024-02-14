@@ -14,8 +14,7 @@ func (app *application) CreateEvent(
 	ctx context.Context,
 	req *connect.Request[pb.CreateEventRequest],
 ) (*connect.Response[pb.CreateEventResponse], error) {
-	privacySetting := models.PrivacySetting(req.Msg.GetPrivacySetting())
-	err := validatePrivacySetting(privacySetting)
+	privacySetting, err := privacySettingFromProtoEnum(req.Msg.GetPrivacySetting())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -53,6 +52,11 @@ func (app *application) GetEvent(
 		return nil, app.serverError(req, err)
 	}
 
+	privacySetting, err := privacySettingToProtoEnum(event.PrivacySetting)
+	if err != nil {
+		return nil, app.serverError(req, err)
+	}
+
 	return &connect.Response[pb.GetEventResponse]{
 		Msg: &pb.GetEventResponse{
 			Event: &pb.Event{
@@ -64,7 +68,7 @@ func (app *application) GetEvent(
 				EndsAt:         timestamppb.New(event.EndsAt),
 				Location:       event.Location,
 				UniqueLink:     event.UniqueLink,
-				PrivacySetting: string(event.PrivacySetting),
+				PrivacySetting: privacySetting,
 			},
 		},
 	}, nil
@@ -80,7 +84,13 @@ func (app *application) ListUpcomingOwnedEvents(
 	}
 
 	var pbEvents []*pb.Event
+	var privacySetting pb.PrivacySetting
 	for _, event := range events {
+		privacySetting, err = privacySettingToProtoEnum(event.PrivacySetting)
+		if err != nil {
+			return nil, app.serverError(req, err)
+		}
+
 		pbEvents = append(pbEvents, &pb.Event{
 			Id:             event.ID,
 			OwnerId:        event.OwnerID,
@@ -90,7 +100,7 @@ func (app *application) ListUpcomingOwnedEvents(
 			EndsAt:         timestamppb.New(event.EndsAt),
 			Location:       event.Location,
 			UniqueLink:     event.UniqueLink,
-			PrivacySetting: string(event.PrivacySetting),
+			PrivacySetting: privacySetting,
 		})
 	}
 
@@ -111,7 +121,19 @@ func (app *application) ListUpcomingInvitedEvents(
 	}
 
 	var pbEvents []*pb.InvitedEvent
+	var status pb.InvitationStatus
+	var privacySetting pb.PrivacySetting
 	for _, event := range events {
+		status, err = invitationStatusToProtoEnum(event.Status)
+		if err != nil {
+			return nil, app.serverError(req, err)
+		}
+
+		privacySetting, err = privacySettingToProtoEnum(event.PrivacySetting)
+		if err != nil {
+			return nil, app.serverError(req, err)
+		}
+
 		pbEvents = append(pbEvents, &pb.InvitedEvent{
 			Event: &pb.Event{
 				Id:             event.ID,
@@ -122,9 +144,9 @@ func (app *application) ListUpcomingInvitedEvents(
 				EndsAt:         timestamppb.New(event.EndsAt),
 				Location:       event.Location,
 				UniqueLink:     event.UniqueLink,
-				PrivacySetting: string(event.PrivacySetting),
+				PrivacySetting: privacySetting,
 			},
-			Status: event.Status,
+			Status: status,
 		})
 	}
 

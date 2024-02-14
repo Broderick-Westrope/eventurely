@@ -17,23 +17,6 @@ type EventRepository interface {
 	ListUpcomingInvited(userID int64) ([]InvitedEvent, error)
 }
 
-type PrivacySetting string
-
-const (
-	PrivacySettingPublic  PrivacySetting = "Public"
-	PrivacySettingPrivate PrivacySetting = "Private"
-)
-
-// IsValidPrivacySetting checks if the provided PrivacySetting is valid (not UNSPECIFIED).
-func IsValidPrivacySetting(setting PrivacySetting) bool {
-	switch setting {
-	case PrivacySettingPublic, PrivacySettingPrivate:
-		return true
-	default:
-		return false
-	}
-}
-
 type Event struct {
 	ID             int64
 	OwnerID        int64
@@ -50,7 +33,7 @@ type Event struct {
 
 type InvitedEvent struct {
 	Event
-	Status string
+	Status InvitationStatus
 }
 
 type eventModel struct {

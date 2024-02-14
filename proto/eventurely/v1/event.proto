@@ -13,6 +13,20 @@ service EventService {
 
 // MODELS
 
+enum PrivacySetting {
+  PRIVACY_SETTING_UNSPECIFIED = 0;
+  PRIVACY_SETTING_PUBLIC = 1;
+  PRIVACY_SETTING_PRIVATE = 2;
+}
+
+enum InvitationStatus {
+  INVITATION_STATUS_UNSPECIFIED = 0;
+  INVITATION_STATUS_SENT = 1;
+  INVITATION_STATUS_YES = 2;
+  INVITATION_STATUS_NO = 3;
+  INVITATION_STATUS_MAYBE = 4;
+}
+
 message Event {
   int64 id = 1;
   int64 owner_id = 2;
@@ -22,12 +36,12 @@ message Event {
   google.protobuf.Timestamp ends_at = 6;
   string location = 7;
   string unique_link = 8;
-  string privacy_setting = 9;
+  PrivacySetting privacy_setting = 9;
 }
 
 message InvitedEvent {
   Event event = 1;
-  string status = 2;
+  InvitationStatus status = 2;
 }
 
 // REQUESTS & RESPONSES
@@ -40,7 +54,7 @@ message CreateEventRequest {
   google.protobuf.Timestamp ends_at = 5;
   string location = 6;
   string unique_link = 7;
-  string privacy_setting = 8;
+  PrivacySetting privacy_setting = 8;
 }
 
 message CreateEventResponse {
