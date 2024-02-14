@@ -1,0 +1,10 @@
+version: v1
+name: buf.build/broderick-westrope/eventurely
+deps:
+  - buf.build/protocolbuffers/wellknowntypes:v21.12
+breaking:
+  use:
+    - FILE
+lint:
+  use:
+    - DEFAULT
