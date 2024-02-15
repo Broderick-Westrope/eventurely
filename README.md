@@ -28,6 +28,10 @@ As a guest, I want to...
 - [ ] receive notifications about my upcoming events.
 - [ ] view past events that I owned or was invited to.
 - [ ] create an account, becoming a registered user, without losing any of my event data.
+- [ ] filter my Pending Invites, Upcoming, Archive, and Organising lists by:
+  - Events that occur within a given time frame (startsAfter & endsBefore)
+  - Events with only a given privacy setting
+  - Invited events whose invitation has a given RSVP status (not applicable to Organising list) 
 
 _NOTE: Guest functionality will be added at a later date._
 
@@ -75,10 +79,10 @@ Coming soon...
 
 **View/Create/Edit:**
 
-- [x] **EventService.Get**: get an event.
-- [x] **EventService.Create**: create a new event.
-- [ ] **EventService.Update**: edit an event that the user owns.
-- [ ] **EventService.Delete**: delete an event that the user owns.
+- [x] **GetEvent**: get an event.
+- [x] **CreateEvent**: create a new event.
+- [ ] **UpdateEvent**: edit an event that the user owns.
+- [ ] **DeleteEvent**: delete an event that the user owns.
 - [ ] invite a user to an event.
   - ! This (and similar invite endpoints) will likely not be its own endpoint, but rather a part of the event creation/editing process.
 
@@ -86,24 +90,25 @@ Coming soon...
 
 _NOTE: This will default to invites that have not been responded to, but filtering will be available._
 
-- [x] **EventService.ListUpcomingInvited**: get the event & invitation for each upcoming event that a user has been invited to.
-  - This should take a filter, and default to only showing events the user has not responded to.
-- [ ] update the RSVP status of an invitation.
+- [x] **ListUpcomingInvitedEvents**: get the event & invitation for each upcoming event that a user has been invited to.
+  - This should take a filter on the frontend, and default to only showing events the user has not responded to.
+- [x] update the RSVP status of an invitation.
+  - [x] When the user resets the response to "Sent" the respondedAt time should be set to null. If the response status is set to anything else, the respondedAt time should be updated to the current time.
 
 **Upcoming:**
 
-- [x] **EventService.ListUpcomingInvited**: get the event & invitation for each upcoming event that a user has been invited to.
-  - [ ] This should take a filter, and default to only showing events the user had responded "Yes" to.
+- [x] **ListUpcomingInvitedEvents**: get the event & invitation for each upcoming event that a user has been invited to.
+  - [ ] This should take a filter on the frontend, and default to only showing events the user had responded "Yes" to.
 
 **Archive:**
 
-- [ ] **EventService.ListPast**: get the event & invitation for each past event that a user has been invited to or owned.
-  - [ ] This should take a filter, and default to showing all events.
+- [x] **ListPastEvents**: get the event & invitation for each past event that a user has been invited to or owned.
+  - [ ] This should take a filter on the frontend, and default to showing all events.
 
 **Organising:**
 
-- [x] **EventService.ListUpcomingOwned**: get the event & invitation for each event that a user owns.
-  - [ ] This should take a filter, and default to showing all events.
+- [x] **ListUpcomingOwnedEvents**: get the event & invitation for each event that a user owns.
+  - [ ] This should take a filter on the frontend, and default to showing all events.
 
 **Connections:**
 

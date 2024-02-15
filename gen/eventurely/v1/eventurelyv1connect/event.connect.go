@@ -23,6 +23,8 @@ const _ = connect.IsAtLeastVersion1_13_0
 const (
 	// EventServiceName is the fully-qualified name of the EventService service.
 	EventServiceName = "eventurely.v1.EventService"
+	// InvitationServiceName is the fully-qualified name of the InvitationService service.
+	InvitationServiceName = "eventurely.v1.InvitationService"
 )
 
 // These constants are the fully-qualified names of the RPCs defined in this package. They're
@@ -44,15 +46,24 @@ const (
 	// EventServiceListUpcomingInvitedEventsProcedure is the fully-qualified name of the EventService's
 	// ListUpcomingInvitedEvents RPC.
 	EventServiceListUpcomingInvitedEventsProcedure = "/eventurely.v1.EventService/ListUpcomingInvitedEvents"
+	// EventServiceListPastEventsProcedure is the fully-qualified name of the EventService's
+	// ListPastEvents RPC.
+	EventServiceListPastEventsProcedure = "/eventurely.v1.EventService/ListPastEvents"
+	// InvitationServiceUpdateInvitationStatusProcedure is the fully-qualified name of the
+	// InvitationService's UpdateInvitationStatus RPC.
+	InvitationServiceUpdateInvitationStatusProcedure = "/eventurely.v1.InvitationService/UpdateInvitationStatus"
 )
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
 var (
-	eventServiceServiceDescriptor                         = v1.File_eventurely_v1_event_proto.Services().ByName("EventService")
-	eventServiceCreateEventMethodDescriptor               = eventServiceServiceDescriptor.Methods().ByName("CreateEvent")
-	eventServiceGetEventMethodDescriptor                  = eventServiceServiceDescriptor.Methods().ByName("GetEvent")
-	eventServiceListUpcomingOwnedEventsMethodDescriptor   = eventServiceServiceDescriptor.Methods().ByName("ListUpcomingOwnedEvents")
-	eventServiceListUpcomingInvitedEventsMethodDescriptor = eventServiceServiceDescriptor.Methods().ByName("ListUpcomingInvitedEvents")
+	eventServiceServiceDescriptor                           = v1.File_eventurely_v1_event_proto.Services().ByName("EventService")
+	eventServiceCreateEventMethodDescriptor                 = eventServiceServiceDescriptor.Methods().ByName("CreateEvent")
+	eventServiceGetEventMethodDescriptor                    = eventServiceServiceDescriptor.Methods().ByName("GetEvent")
+	eventServiceListUpcomingOwnedEventsMethodDescriptor     = eventServiceServiceDescriptor.Methods().ByName("ListUpcomingOwnedEvents")
+	eventServiceListUpcomingInvitedEventsMethodDescriptor   = eventServiceServiceDescriptor.Methods().ByName("ListUpcomingInvitedEvents")
+	eventServiceListPastEventsMethodDescriptor              = eventServiceServiceDescriptor.Methods().ByName("ListPastEvents")
+	invitationServiceServiceDescriptor                      = v1.File_eventurely_v1_event_proto.Services().ByName("InvitationService")
+	invitationServiceUpdateInvitationStatusMethodDescriptor = invitationServiceServiceDescriptor.Methods().ByName("UpdateInvitationStatus")
 )
 
 // EventServiceClient is a client for the eventurely.v1.EventService service.
@@ -61,6 +72,7 @@ type EventServiceClient interface {
 	GetEvent(context.Context, *connect.Request[v1.GetEventRequest]) (*connect.Response[v1.GetEventResponse], error)
 	ListUpcomingOwnedEvents(context.Context, *connect.Request[v1.ListUpcomingOwnedEventsRequest]) (*connect.Response[v1.ListUpcomingOwnedEventsResponse], error)
 	ListUpcomingInvitedEvents(context.Context, *connect.Request[v1.ListUpcomingInvitedEventsRequest]) (*connect.Response[v1.ListUpcomingInvitedEventsResponse], error)
+	ListPastEvents(context.Context, *connect.Request[v1.ListPastEventsRequest]) (*connect.Response[v1.ListPastEventsResponse], error)
 }
 
 // NewEventServiceClient constructs a client for the eventurely.v1.EventService service. By default,
@@ -97,6 +109,12 @@ func NewEventServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(eventServiceListUpcomingInvitedEventsMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
+		listPastEvents: connect.NewClient[v1.ListPastEventsRequest, v1.ListPastEventsResponse](
+			httpClient,
+			baseURL+EventServiceListPastEventsProcedure,
+			connect.WithSchema(eventServiceListPastEventsMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -106,6 +124,7 @@ type eventServiceClient struct {
 	getEvent                  *connect.Client[v1.GetEventRequest, v1.GetEventResponse]
 	listUpcomingOwnedEvents   *connect.Client[v1.ListUpcomingOwnedEventsRequest, v1.ListUpcomingOwnedEventsResponse]
 	listUpcomingInvitedEvents *connect.Client[v1.ListUpcomingInvitedEventsRequest, v1.ListUpcomingInvitedEventsResponse]
+	listPastEvents            *connect.Client[v1.ListPastEventsRequest, v1.ListPastEventsResponse]
 }
 
 // CreateEvent calls eventurely.v1.EventService.CreateEvent.
@@ -128,12 +147,18 @@ func (c *eventServiceClient) ListUpcomingInvitedEvents(ctx context.Context, req 
 	return c.listUpcomingInvitedEvents.CallUnary(ctx, req)
 }
 
+// ListPastEvents calls eventurely.v1.EventService.ListPastEvents.
+func (c *eventServiceClient) ListPastEvents(ctx context.Context, req *connect.Request[v1.ListPastEventsRequest]) (*connect.Response[v1.ListPastEventsResponse], error) {
+	return c.listPastEvents.CallUnary(ctx, req)
+}
+
 // EventServiceHandler is an implementation of the eventurely.v1.EventService service.
 type EventServiceHandler interface {
 	CreateEvent(context.Context, *connect.Request[v1.CreateEventRequest]) (*connect.Response[v1.CreateEventResponse], error)
 	GetEvent(context.Context, *connect.Request[v1.GetEventRequest]) (*connect.Response[v1.GetEventResponse], error)
 	ListUpcomingOwnedEvents(context.Context, *connect.Request[v1.ListUpcomingOwnedEventsRequest]) (*connect.Response[v1.ListUpcomingOwnedEventsResponse], error)
 	ListUpcomingInvitedEvents(context.Context, *connect.Request[v1.ListUpcomingInvitedEventsRequest]) (*connect.Response[v1.ListUpcomingInvitedEventsResponse], error)
+	ListPastEvents(context.Context, *connect.Request[v1.ListPastEventsRequest]) (*connect.Response[v1.ListPastEventsResponse], error)
 }
 
 // NewEventServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -166,6 +191,12 @@ func NewEventServiceHandler(svc EventServiceHandler, opts ...connect.HandlerOpti
 		connect.WithSchema(eventServiceListUpcomingInvitedEventsMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
+	eventServiceListPastEventsHandler := connect.NewUnaryHandler(
+		EventServiceListPastEventsProcedure,
+		svc.ListPastEvents,
+		connect.WithSchema(eventServiceListPastEventsMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/eventurely.v1.EventService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case EventServiceCreateEventProcedure:
@@ -176,6 +207,8 @@ func NewEventServiceHandler(svc EventServiceHandler, opts ...connect.HandlerOpti
 			eventServiceListUpcomingOwnedEventsHandler.ServeHTTP(w, r)
 		case EventServiceListUpcomingInvitedEventsProcedure:
 			eventServiceListUpcomingInvitedEventsHandler.ServeHTTP(w, r)
+		case EventServiceListPastEventsProcedure:
+			eventServiceListPastEventsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -199,4 +232,76 @@ func (UnimplementedEventServiceHandler) ListUpcomingOwnedEvents(context.Context,
 
 func (UnimplementedEventServiceHandler) ListUpcomingInvitedEvents(context.Context, *connect.Request[v1.ListUpcomingInvitedEventsRequest]) (*connect.Response[v1.ListUpcomingInvitedEventsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("eventurely.v1.EventService.ListUpcomingInvitedEvents is not implemented"))
+}
+
+func (UnimplementedEventServiceHandler) ListPastEvents(context.Context, *connect.Request[v1.ListPastEventsRequest]) (*connect.Response[v1.ListPastEventsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("eventurely.v1.EventService.ListPastEvents is not implemented"))
+}
+
+// InvitationServiceClient is a client for the eventurely.v1.InvitationService service.
+type InvitationServiceClient interface {
+	UpdateInvitationStatus(context.Context, *connect.Request[v1.UpdateInvitationStatusRequest]) (*connect.Response[v1.UpdateInvitationStatusResponse], error)
+}
+
+// NewInvitationServiceClient constructs a client for the eventurely.v1.InvitationService service.
+// By default, it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped
+// responses, and sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the
+// connect.WithGRPC() or connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewInvitationServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) InvitationServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	return &invitationServiceClient{
+		updateInvitationStatus: connect.NewClient[v1.UpdateInvitationStatusRequest, v1.UpdateInvitationStatusResponse](
+			httpClient,
+			baseURL+InvitationServiceUpdateInvitationStatusProcedure,
+			connect.WithSchema(invitationServiceUpdateInvitationStatusMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// invitationServiceClient implements InvitationServiceClient.
+type invitationServiceClient struct {
+	updateInvitationStatus *connect.Client[v1.UpdateInvitationStatusRequest, v1.UpdateInvitationStatusResponse]
+}
+
+// UpdateInvitationStatus calls eventurely.v1.InvitationService.UpdateInvitationStatus.
+func (c *invitationServiceClient) UpdateInvitationStatus(ctx context.Context, req *connect.Request[v1.UpdateInvitationStatusRequest]) (*connect.Response[v1.UpdateInvitationStatusResponse], error) {
+	return c.updateInvitationStatus.CallUnary(ctx, req)
+}
+
+// InvitationServiceHandler is an implementation of the eventurely.v1.InvitationService service.
+type InvitationServiceHandler interface {
+	UpdateInvitationStatus(context.Context, *connect.Request[v1.UpdateInvitationStatusRequest]) (*connect.Response[v1.UpdateInvitationStatusResponse], error)
+}
+
+// NewInvitationServiceHandler builds an HTTP handler from the service implementation. It returns
+// the path on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewInvitationServiceHandler(svc InvitationServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	invitationServiceUpdateInvitationStatusHandler := connect.NewUnaryHandler(
+		InvitationServiceUpdateInvitationStatusProcedure,
+		svc.UpdateInvitationStatus,
+		connect.WithSchema(invitationServiceUpdateInvitationStatusMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/eventurely.v1.InvitationService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case InvitationServiceUpdateInvitationStatusProcedure:
+			invitationServiceUpdateInvitationStatusHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedInvitationServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedInvitationServiceHandler struct{}
+
+func (UnimplementedInvitationServiceHandler) UpdateInvitationStatus(context.Context, *connect.Request[v1.UpdateInvitationStatusRequest]) (*connect.Response[v1.UpdateInvitationStatusResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("eventurely.v1.InvitationService.UpdateInvitationStatus is not implemented"))
 }

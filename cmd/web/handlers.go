@@ -35,7 +35,7 @@ func (app *application) CreateEvent(
 
 	return &connect.Response[pb.CreateEventResponse]{
 		Msg: &pb.CreateEventResponse{
-			Id: id,
+			EventId: id,
 		},
 	}, nil
 }
@@ -44,7 +44,7 @@ func (app *application) GetEvent(
 	ctx context.Context,
 	req *connect.Request[pb.GetEventRequest],
 ) (*connect.Response[pb.GetEventResponse], error) {
-	event, err := app.events.Get(req.Msg.GetId())
+	event, err := app.events.Get(req.Msg.GetEventId())
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
@@ -121,10 +121,10 @@ func (app *application) ListUpcomingInvitedEvents(
 	}
 
 	var pbEvents []*pb.InvitedEvent
-	var status pb.InvitationStatus
+	var responseStatus pb.ResponseStatus
 	var privacySetting pb.PrivacySetting
 	for _, event := range events {
-		status, err = invitationStatusToProtoEnum(event.Status)
+		responseStatus, err = responseStatusToProtoEnum(event.Status)
 		if err != nil {
 			return nil, app.serverError(req, err)
 		}
@@ -146,13 +146,71 @@ func (app *application) ListUpcomingInvitedEvents(
 				UniqueLink:     event.UniqueLink,
 				PrivacySetting: privacySetting,
 			},
-			Status: status,
+			Status: responseStatus,
 		})
 	}
 
 	return &connect.Response[pb.ListUpcomingInvitedEventsResponse]{
 		Msg: &pb.ListUpcomingInvitedEventsResponse{
 			Events: pbEvents,
+		},
+	}, nil
+}
+
+func (app *application) ListPastEvents(
+	ctx context.Context,
+	req *connect.Request[pb.ListPastEventsRequest],
+) (*connect.Response[pb.ListPastEventsResponse], error) {
+	events, err := app.events.ListPast(req.Msg.GetUserId())
+	if err != nil {
+		return nil, app.serverError(req, err)
+	}
+
+	var pbEvents []*pb.Event
+	var privacySetting pb.PrivacySetting
+	for _, event := range events {
+		privacySetting, err = privacySettingToProtoEnum(event.PrivacySetting)
+		if err != nil {
+			return nil, app.serverError(req, err)
+		}
+
+		pbEvents = append(pbEvents, &pb.Event{
+			Id:             event.ID,
+			OwnerId:        event.OwnerID,
+			Title:          event.Title,
+			Description:    event.Description,
+			StartsAt:       timestamppb.New(event.StartsAt),
+			EndsAt:         timestamppb.New(event.EndsAt),
+			Location:       event.Location,
+			UniqueLink:     event.UniqueLink,
+			PrivacySetting: privacySetting,
+		})
+	}
+
+	return &connect.Response[pb.ListPastEventsResponse]{
+		Msg: &pb.ListPastEventsResponse{
+			Events: pbEvents,
+		},
+	}, nil
+}
+
+func (app *application) UpdateInvitationStatus(
+	ctx context.Context,
+	req *connect.Request[pb.UpdateInvitationStatusRequest],
+) (*connect.Response[pb.UpdateInvitationStatusResponse], error) {
+	responseStatus, err := responseStatusFromProtoEnum(req.Msg.GetStatus())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+
+	id, err := app.invitations.UpdateResponseStatus(req.Msg.GetInvitationId(), responseStatus)
+	if err != nil {
+		return nil, app.serverError(req, err)
+	}
+
+	return &connect.Response[pb.UpdateInvitationStatusResponse]{
+		Msg: &pb.UpdateInvitationStatusResponse{
+			InvitationId: id,
 		},
 	}, nil
 }

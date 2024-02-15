@@ -15,6 +15,8 @@ type EventRepository interface {
 	ListUpcomingOwned(userID int64) ([]Event, error)
 	// ListUpcomingInvited returns all events that the user is invited to and will start after the current time.
 	ListUpcomingInvited(userID int64) ([]InvitedEvent, error)
+	// ListPast returns all events that the user is invited to or owned and ended before the current time.
+	ListPast(userID int64) ([]Event, error)
 }
 
 type Event struct {
@@ -33,7 +35,7 @@ type Event struct {
 
 type InvitedEvent struct {
 	Event
-	Status InvitationStatus
+	Status ResponseStatus
 }
 
 type eventModel struct {
@@ -63,7 +65,8 @@ func (m *eventModel) Create(ownerId int64, title, description, location, uniqueL
 
 func (m *eventModel) Get(ID int64) (*Event, error) {
 	stmt := `SELECT ID, OwnerID, Title, Description, StartsAt, EndsAt, Location, UniqueLink, PrivacySetting, CreatedAt, UpdatedAt
-	FROM Event WHERE ID = ?`
+	FROM Event 
+	WHERE ID = ?`
 
 	var e Event
 	err := m.DB.QueryRow(stmt, ID).Scan(&e.ID, &e.OwnerID, &e.Title, &e.Description, &e.StartsAt, &e.EndsAt, &e.Location, &e.UniqueLink, &e.PrivacySetting, &e.CreatedAt, &e.UpdatedAt)
@@ -79,7 +82,9 @@ func (m *eventModel) Get(ID int64) (*Event, error) {
 
 func (m *eventModel) ListUpcomingOwned(userID int64) ([]Event, error) {
 	stmt := `SELECT ID, OwnerID, Title, Description, StartsAt, EndsAt, Location, UniqueLink, PrivacySetting, CreatedAt, UpdatedAt
-	FROM Event WHERE StartsAt > ? AND OwnerID = ? ORDER BY StartsAt`
+	FROM Event 
+	WHERE StartsAt > ? AND OwnerID = ? 
+	ORDER BY StartsAt`
 
 	rows, err := m.DB.Query(stmt, time.Now(), userID)
 	if err != nil {
@@ -108,7 +113,8 @@ func (m *eventModel) ListUpcomingInvited(userID int64) ([]InvitedEvent, error) {
 	stmt := `SELECT e.ID, e.OwnerID, e.Title, e.Description, e.StartsAt, e.EndsAt, e.Location, e.UniqueLink, e.PrivacySetting, e.CreatedAt, e.UpdatedAt, i.Status
 	FROM Event e
 	JOIN Invitation i ON e.ID = i.EventID
-	WHERE e.StartsAt > ? AND i.UserID = ? ORDER BY e.StartsAt`
+	WHERE e.StartsAt > ? AND i.UserID = ?
+	ORDER BY e.StartsAt`
 
 	rows, err := m.DB.Query(stmt, time.Now(), userID)
 	if err != nil {
@@ -120,6 +126,40 @@ func (m *eventModel) ListUpcomingInvited(userID int64) ([]InvitedEvent, error) {
 	for rows.Next() {
 		var e InvitedEvent
 		err = rows.Scan(&e.ID, &e.OwnerID, &e.Title, &e.Description, &e.StartsAt, &e.EndsAt, &e.Location, &e.UniqueLink, &e.PrivacySetting, &e.CreatedAt, &e.UpdatedAt, &e.Status)
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, e)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return events, nil
+}
+
+func (m *eventModel) ListPast(userID int64) ([]Event, error) {
+	stmt := `SELECT e.ID, e.OwnerID, e.Title, e.Description, e.StartsAt, e.EndsAt, e.Location, e.UniqueLink, e.PrivacySetting, e.CreatedAt, e.UpdatedAt
+	FROM Event e
+	JOIN Invitation i ON e.ID = i.EventID
+	WHERE e.EndsAt < ? AND i.UserID = ?
+	UNION 
+	SELECT e.ID, e.OwnerID, e.Title, e.Description, e.StartsAt, e.EndsAt, e.Location, e.UniqueLink, e.PrivacySetting, e.CreatedAt, e.UpdatedAt
+	FROM Event e
+	WHERE e.EndsAt < ? AND e.OwnerID = ?
+	ORDER BY e.StartsAt DESC`
+
+	rows, err := m.DB.Query(stmt, time.Now(), userID, time.Now(), userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var events []Event
+	for rows.Next() {
+		var e Event
+		err = rows.Scan(&e.ID, &e.OwnerID, &e.Title, &e.Description, &e.StartsAt, &e.EndsAt, &e.Location, &e.UniqueLink, &e.PrivacySetting, &e.CreatedAt, &e.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}

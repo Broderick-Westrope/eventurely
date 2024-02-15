@@ -15,8 +15,9 @@ import (
 )
 
 type application struct {
-	logger *slog.Logger
-	events models.EventRepository
+	logger      *slog.Logger
+	events      models.EventRepository
+	invitations models.InvitationRepository
 }
 
 func main() {
@@ -34,8 +35,9 @@ func main() {
 	defer db.Close()
 
 	app := &application{
-		logger: logger,
-		events: models.NewEventRepository(db),
+		logger:      logger,
+		events:      models.NewEventRepository(db),
+		invitations: models.NewInvitationRepository(db),
 	}
 
 	app.logger.Info("starting server", slog.String("addr", *addr))

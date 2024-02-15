@@ -9,22 +9,27 @@ service EventService {
   rpc GetEvent(GetEventRequest) returns (GetEventResponse);
   rpc ListUpcomingOwnedEvents(ListUpcomingOwnedEventsRequest) returns (ListUpcomingOwnedEventsResponse);
   rpc ListUpcomingInvitedEvents(ListUpcomingInvitedEventsRequest) returns (ListUpcomingInvitedEventsResponse);
+  rpc ListPastEvents(ListPastEventsRequest) returns (ListPastEventsResponse);
+}
+
+service InvitationService {
+  rpc UpdateInvitationStatus(UpdateInvitationStatusRequest) returns (UpdateInvitationStatusResponse);
 }
 
 // MODELS
+
+enum ResponseStatus {
+  RESPONSE_STATUS_UNSPECIFIED = 0;
+  RESPONSE_STATUS_SENT = 1;
+  RESPONSE_STATUS_YES = 2;
+  RESPONSE_STATUS_NO = 3;
+  RESPONSE_STATUS_MAYBE = 4;
+}
 
 enum PrivacySetting {
   PRIVACY_SETTING_UNSPECIFIED = 0;
   PRIVACY_SETTING_PUBLIC = 1;
   PRIVACY_SETTING_PRIVATE = 2;
-}
-
-enum InvitationStatus {
-  INVITATION_STATUS_UNSPECIFIED = 0;
-  INVITATION_STATUS_SENT = 1;
-  INVITATION_STATUS_YES = 2;
-  INVITATION_STATUS_NO = 3;
-  INVITATION_STATUS_MAYBE = 4;
 }
 
 message Event {
@@ -41,7 +46,7 @@ message Event {
 
 message InvitedEvent {
   Event event = 1;
-  InvitationStatus status = 2;
+  ResponseStatus status = 2;
 }
 
 // REQUESTS & RESPONSES
@@ -58,11 +63,11 @@ message CreateEventRequest {
 }
 
 message CreateEventResponse {
-  int64 id = 1;
+  int64 event_id = 1;
 }
 
 message GetEventRequest {
-  int64 id = 1;
+  int64 event_id = 1;
 }
 
 message GetEventResponse {
@@ -83,4 +88,21 @@ message ListUpcomingInvitedEventsRequest {
 
 message ListUpcomingInvitedEventsResponse {
   repeated InvitedEvent events = 1;
+}
+
+message ListPastEventsRequest {
+  int64 user_id = 1;
+}
+
+message ListPastEventsResponse {
+  repeated Event events = 1;
+}
+
+message UpdateInvitationStatusRequest {
+  int64 invitation_id =1;
+  ResponseStatus status =2;
+}
+
+message UpdateInvitationStatusResponse {
+  int64 invitation_id = 1;
 }

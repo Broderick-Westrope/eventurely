@@ -1,12 +1,12 @@
 package models
 
-type InvitationStatus string
+type ResponseStatus string
 
 const (
-	InvitationStatusSent  InvitationStatus = "Sent"
-	InvitationStatusYes   InvitationStatus = "Yes"
-	InvitationStatusNo    InvitationStatus = "No"
-	InvitationStatusMaybe InvitationStatus = "Maybe"
+	ResponseStatusSent  ResponseStatus = "Sent"
+	ResponseStatusYes   ResponseStatus = "Yes"
+	ResponseStatusNo    ResponseStatus = "No"
+	ResponseStatusMaybe ResponseStatus = "Maybe"
 )
 
 type PrivacySetting string

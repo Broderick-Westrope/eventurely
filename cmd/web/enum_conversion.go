@@ -7,31 +7,31 @@ import (
 	"github.com/Broderick-Westrope/eventurely/internal/models"
 )
 
-func invitationStatusToProtoEnum(status models.InvitationStatus) (pb.InvitationStatus, error) {
+func responseStatusToProtoEnum(status models.ResponseStatus) (pb.ResponseStatus, error) {
 	switch status {
-	case models.InvitationStatusSent:
-		return pb.InvitationStatus_INVITATION_STATUS_SENT, nil
-	case models.InvitationStatusYes:
-		return pb.InvitationStatus_INVITATION_STATUS_YES, nil
-	case models.InvitationStatusNo:
-		return pb.InvitationStatus_INVITATION_STATUS_NO, nil
-	case models.InvitationStatusMaybe:
-		return pb.InvitationStatus_INVITATION_STATUS_MAYBE, nil
+	case models.ResponseStatusSent:
+		return pb.ResponseStatus_RESPONSE_STATUS_SENT, nil
+	case models.ResponseStatusYes:
+		return pb.ResponseStatus_RESPONSE_STATUS_YES, nil
+	case models.ResponseStatusNo:
+		return pb.ResponseStatus_RESPONSE_STATUS_NO, nil
+	case models.ResponseStatusMaybe:
+		return pb.ResponseStatus_RESPONSE_STATUS_MAYBE, nil
 	default:
 		return 0, fmt.Errorf("invalid invitation status: %s", status)
 	}
 }
 
-func invitationStatusFromProtoEnum(status pb.InvitationStatus) (models.InvitationStatus, error) {
+func responseStatusFromProtoEnum(status pb.ResponseStatus) (models.ResponseStatus, error) {
 	switch status {
-	case pb.InvitationStatus_INVITATION_STATUS_SENT:
-		return models.InvitationStatusSent, nil
-	case pb.InvitationStatus_INVITATION_STATUS_YES:
-		return models.InvitationStatusYes, nil
-	case pb.InvitationStatus_INVITATION_STATUS_NO:
-		return models.InvitationStatusNo, nil
-	case pb.InvitationStatus_INVITATION_STATUS_MAYBE:
-		return models.InvitationStatusMaybe, nil
+	case pb.ResponseStatus_RESPONSE_STATUS_SENT:
+		return models.ResponseStatusSent, nil
+	case pb.ResponseStatus_RESPONSE_STATUS_YES:
+		return models.ResponseStatusYes, nil
+	case pb.ResponseStatus_RESPONSE_STATUS_NO:
+		return models.ResponseStatusNo, nil
+	case pb.ResponseStatus_RESPONSE_STATUS_MAYBE:
+		return models.ResponseStatusMaybe, nil
 	default:
 		return "", fmt.Errorf("invalid invitation status: %v", status)
 	}
