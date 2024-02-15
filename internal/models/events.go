@@ -12,7 +12,9 @@ type EventRepository interface {
 	// Get returns the event with the specified ID.
 	Get(ID int64) (*Event, error)
 	// Update updates the contents of the event with the matching ID
-	Update(eventID int64, title, description, location string, startsAt, endsAt time.Time, privacySetting PrivacySetting) error
+	Update(eventID int64, title, description, location string, startsAt, endsAt time.Time, privacySetting PrivacySetting) (int64, error)
+	// Delete deletes all events with the matching ID
+	Delete(eventID int64) (int64, error)
 	// ListUpcomingOwned returns all events that will start after the current time.
 	ListUpcomingOwned(userID int64) ([]Event, error)
 	// ListUpcomingInvited returns all events that the user is invited to and will start after the current time.
@@ -82,17 +84,29 @@ func (m *eventModel) Get(ID int64) (*Event, error) {
 	return &e, nil
 }
 
-func (m *eventModel) Update(eventID int64, title, description, location string, startsAt, endsAt time.Time, privacySetting PrivacySetting) error {
+func (m *eventModel) Update(eventID int64, title, description, location string, startsAt, endsAt time.Time, privacySetting PrivacySetting) (int64, error) {
 	stmt := `UPDATE Event
 	SET Title = ?, Description = ?, StartsAt = ?, EndsAt = ?, Location = ?, PrivacySetting = ?, UpdatedAt = ?
 	WHERE ID = ?`
 
-	_, err := m.DB.Exec(stmt, title, description, startsAt, endsAt, location, privacySetting, time.Now(), eventID)
+	result, err := m.DB.Exec(stmt, title, description, startsAt, endsAt, location, privacySetting, time.Now(), eventID)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return result.RowsAffected()
+}
+
+func (m *eventModel) Delete(eventID int64) (int64, error) {
+	stmt := `DELETE FROM Event
+	WHERE ID = ?`
+
+	result, err := m.DB.Exec(stmt, eventID)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.RowsAffected()
 }
 
 func (m *eventModel) ListUpcomingOwned(userID int64) ([]Event, error) {

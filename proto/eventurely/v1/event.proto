@@ -8,6 +8,7 @@ service EventService {
   rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
   rpc GetEvent(GetEventRequest) returns (GetEventResponse);
   rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
+  rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse);
   rpc ListUpcomingOwnedEvents(ListUpcomingOwnedEventsRequest) returns (ListUpcomingOwnedEventsResponse);
   rpc ListUpcomingInvitedEvents(ListUpcomingInvitedEventsRequest) returns (ListUpcomingInvitedEventsResponse);
   rpc ListPastEvents(ListPastEventsRequest) returns (ListPastEventsResponse);
@@ -86,7 +87,15 @@ message UpdateEventRequest {
 }
 
 message UpdateEventResponse {
-  int64 event_id = 1;
+  int64 rows_affected = 1;
+}
+
+message DeleteEventRequest {
+  repeated int64 event_ids = 1;
+}
+
+message DeleteEventResponse {
+  int64 rows_affected = 1;
 }
 
 message ListUpcomingOwnedEventsRequest {
@@ -118,4 +127,6 @@ message UpdateInvitationStatusRequest {
   ResponseStatus status = 2;
 }
 
-message UpdateInvitationStatusResponse {}
+message UpdateInvitationStatusResponse {
+  int64 rows_affected = 1;
+}

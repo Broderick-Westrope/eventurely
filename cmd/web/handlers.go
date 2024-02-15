@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"connectrpc.com/connect"
 	pb "github.com/Broderick-Westrope/eventurely/gen/eventurely/v1"
@@ -83,7 +84,7 @@ func (app *application) UpdateEvent(
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	err = app.events.Update(
+	rowsAffected, err := app.events.Update(
 		req.Msg.GetEventId(),
 		req.Msg.GetTitle(),
 		req.Msg.GetDescription(),
@@ -96,8 +97,39 @@ func (app *application) UpdateEvent(
 		return nil, app.serverError(req, err)
 	}
 
+	if rowsAffected == 0 {
+		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("no events found with matching IDs"))
+	}
+
 	return &connect.Response[pb.UpdateEventResponse]{
-		Msg: &pb.UpdateEventResponse{},
+		Msg: &pb.UpdateEventResponse{
+			RowsAffected: rowsAffected,
+		},
+	}, nil
+}
+
+func (app *application) DeleteEvent(
+	ctx context.Context,
+	req *connect.Request[pb.DeleteEventRequest],
+) (*connect.Response[pb.DeleteEventResponse], error) {
+	rowsAffected := int64(0)
+
+	for _, id := range req.Msg.GetEventIds() {
+		count, err := app.events.Delete(id)
+		if err != nil {
+			return nil, app.serverError(req, err)
+		}
+		rowsAffected += count
+	}
+
+	if rowsAffected == 0 {
+		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("no events found with matching IDs"))
+	}
+
+	return &connect.Response[pb.DeleteEventResponse]{
+		Msg: &pb.DeleteEventResponse{
+			RowsAffected: rowsAffected,
+		},
 	}, nil
 }
 
@@ -230,12 +262,18 @@ func (app *application) UpdateInvitationStatus(
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	err = app.invitations.UpdateResponseStatus(req.Msg.GetInvitationId(), responseStatus)
+	rowsAffected, err := app.invitations.UpdateResponseStatus(req.Msg.GetInvitationId(), responseStatus)
 	if err != nil {
 		return nil, app.serverError(req, err)
 	}
 
+	if rowsAffected == 0 {
+		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("no events found with matching IDs"))
+	}
+
 	return &connect.Response[pb.UpdateInvitationStatusResponse]{
-		Msg: &pb.UpdateInvitationStatusResponse{},
+		Msg: &pb.UpdateInvitationStatusResponse{
+			RowsAffected: rowsAffected,
+		},
 	}, nil
 }
