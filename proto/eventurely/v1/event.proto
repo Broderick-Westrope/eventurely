@@ -7,6 +7,7 @@ package eventurely.v1;
 service EventService {
   rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
   rpc GetEvent(GetEventRequest) returns (GetEventResponse);
+  rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
   rpc ListUpcomingOwnedEvents(ListUpcomingOwnedEventsRequest) returns (ListUpcomingOwnedEventsResponse);
   rpc ListUpcomingInvitedEvents(ListUpcomingInvitedEventsRequest) returns (ListUpcomingInvitedEventsResponse);
   rpc ListPastEvents(ListPastEventsRequest) returns (ListPastEventsResponse);
@@ -74,6 +75,20 @@ message GetEventResponse {
   Event event = 1;
 }
 
+message UpdateEventRequest {
+  int64  event_id = 1;
+  string title = 2;
+  string description = 3;
+  google.protobuf.Timestamp starts_at = 4;
+  google.protobuf.Timestamp ends_at = 5;
+  string location = 6;
+  PrivacySetting privacy_setting = 8;
+}
+
+message UpdateEventResponse {
+  int64 event_id = 1;
+}
+
 message ListUpcomingOwnedEventsRequest {
   int64 user_id = 1;
 }
@@ -99,10 +114,8 @@ message ListPastEventsResponse {
 }
 
 message UpdateInvitationStatusRequest {
-  int64 invitation_id =1;
-  ResponseStatus status =2;
+  int64 invitation_id = 1;
+  ResponseStatus status = 2;
 }
 
-message UpdateInvitationStatusResponse {
-  int64 invitation_id = 1;
-}
+message UpdateInvitationStatusResponse {}

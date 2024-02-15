@@ -6,7 +6,7 @@ import (
 )
 
 type InvitationRepository interface {
-	UpdateResponseStatus(invitationID int64, responseStatus ResponseStatus) (int64, error)
+	UpdateResponseStatus(invitationID int64, responseStatus ResponseStatus) error
 }
 
 type Invitation struct {
@@ -26,7 +26,7 @@ func NewInvitationRepository(db *sql.DB) InvitationRepository {
 	return &invitationModel{DB: db}
 }
 
-func (m *invitationModel) UpdateResponseStatus(invitationID int64, responseStatus ResponseStatus) (int64, error) {
+func (m *invitationModel) UpdateResponseStatus(invitationID int64, responseStatus ResponseStatus) error {
 	stmt := `UPDATE Invitation
 	SET Status = ?, RespondedAt = ?
 	WHERE ID = ?`
@@ -39,15 +39,10 @@ func (m *invitationModel) UpdateResponseStatus(invitationID int64, responseStatu
 		respondedAt = time.Now()
 	}
 
-	result, err := m.DB.Exec(stmt, responseStatus, respondedAt, invitationID)
+	_, err := m.DB.Exec(stmt, responseStatus, respondedAt, invitationID)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
-
-	return id, nil
+	return nil
 }

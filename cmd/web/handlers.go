@@ -74,6 +74,33 @@ func (app *application) GetEvent(
 	}, nil
 }
 
+func (app *application) UpdateEvent(
+	ctx context.Context,
+	req *connect.Request[pb.UpdateEventRequest],
+) (*connect.Response[pb.UpdateEventResponse], error) {
+	privacySetting, err := privacySettingFromProtoEnum(req.Msg.GetPrivacySetting())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+
+	err = app.events.Update(
+		req.Msg.GetEventId(),
+		req.Msg.GetTitle(),
+		req.Msg.GetDescription(),
+		req.Msg.GetLocation(),
+		req.Msg.GetStartsAt().AsTime(),
+		req.Msg.GetEndsAt().AsTime(),
+		privacySetting,
+	)
+	if err != nil {
+		return nil, app.serverError(req, err)
+	}
+
+	return &connect.Response[pb.UpdateEventResponse]{
+		Msg: &pb.UpdateEventResponse{},
+	}, nil
+}
+
 func (app *application) ListUpcomingOwnedEvents(
 	ctx context.Context,
 	req *connect.Request[pb.ListUpcomingOwnedEventsRequest],
@@ -203,14 +230,12 @@ func (app *application) UpdateInvitationStatus(
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	id, err := app.invitations.UpdateResponseStatus(req.Msg.GetInvitationId(), responseStatus)
+	err = app.invitations.UpdateResponseStatus(req.Msg.GetInvitationId(), responseStatus)
 	if err != nil {
 		return nil, app.serverError(req, err)
 	}
 
 	return &connect.Response[pb.UpdateInvitationStatusResponse]{
-		Msg: &pb.UpdateInvitationStatusResponse{
-			InvitationId: id,
-		},
+		Msg: &pb.UpdateInvitationStatusResponse{},
 	}, nil
 }

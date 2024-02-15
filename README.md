@@ -117,3 +117,9 @@ Coming soon...
 **Settings:**
 
 Coming soon...
+
+### Future Additions
+
+Following is a list of low-priority features that could be added at a later date, not including those mentioned elsewhere in this document:
+- [ ] collaborative events: allow users to add co-owners who also have the same rights to editing the event. Should co-owners be able to kick others or only leave willingly?
+- [ ] several emails per account, each with their own verification check

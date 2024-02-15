@@ -40,6 +40,9 @@ const (
 	EventServiceCreateEventProcedure = "/eventurely.v1.EventService/CreateEvent"
 	// EventServiceGetEventProcedure is the fully-qualified name of the EventService's GetEvent RPC.
 	EventServiceGetEventProcedure = "/eventurely.v1.EventService/GetEvent"
+	// EventServiceUpdateEventProcedure is the fully-qualified name of the EventService's UpdateEvent
+	// RPC.
+	EventServiceUpdateEventProcedure = "/eventurely.v1.EventService/UpdateEvent"
 	// EventServiceListUpcomingOwnedEventsProcedure is the fully-qualified name of the EventService's
 	// ListUpcomingOwnedEvents RPC.
 	EventServiceListUpcomingOwnedEventsProcedure = "/eventurely.v1.EventService/ListUpcomingOwnedEvents"
@@ -59,6 +62,7 @@ var (
 	eventServiceServiceDescriptor                           = v1.File_eventurely_v1_event_proto.Services().ByName("EventService")
 	eventServiceCreateEventMethodDescriptor                 = eventServiceServiceDescriptor.Methods().ByName("CreateEvent")
 	eventServiceGetEventMethodDescriptor                    = eventServiceServiceDescriptor.Methods().ByName("GetEvent")
+	eventServiceUpdateEventMethodDescriptor                 = eventServiceServiceDescriptor.Methods().ByName("UpdateEvent")
 	eventServiceListUpcomingOwnedEventsMethodDescriptor     = eventServiceServiceDescriptor.Methods().ByName("ListUpcomingOwnedEvents")
 	eventServiceListUpcomingInvitedEventsMethodDescriptor   = eventServiceServiceDescriptor.Methods().ByName("ListUpcomingInvitedEvents")
 	eventServiceListPastEventsMethodDescriptor              = eventServiceServiceDescriptor.Methods().ByName("ListPastEvents")
@@ -70,6 +74,7 @@ var (
 type EventServiceClient interface {
 	CreateEvent(context.Context, *connect.Request[v1.CreateEventRequest]) (*connect.Response[v1.CreateEventResponse], error)
 	GetEvent(context.Context, *connect.Request[v1.GetEventRequest]) (*connect.Response[v1.GetEventResponse], error)
+	UpdateEvent(context.Context, *connect.Request[v1.UpdateEventRequest]) (*connect.Response[v1.UpdateEventResponse], error)
 	ListUpcomingOwnedEvents(context.Context, *connect.Request[v1.ListUpcomingOwnedEventsRequest]) (*connect.Response[v1.ListUpcomingOwnedEventsResponse], error)
 	ListUpcomingInvitedEvents(context.Context, *connect.Request[v1.ListUpcomingInvitedEventsRequest]) (*connect.Response[v1.ListUpcomingInvitedEventsResponse], error)
 	ListPastEvents(context.Context, *connect.Request[v1.ListPastEventsRequest]) (*connect.Response[v1.ListPastEventsResponse], error)
@@ -97,6 +102,12 @@ func NewEventServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(eventServiceGetEventMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
+		updateEvent: connect.NewClient[v1.UpdateEventRequest, v1.UpdateEventResponse](
+			httpClient,
+			baseURL+EventServiceUpdateEventProcedure,
+			connect.WithSchema(eventServiceUpdateEventMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 		listUpcomingOwnedEvents: connect.NewClient[v1.ListUpcomingOwnedEventsRequest, v1.ListUpcomingOwnedEventsResponse](
 			httpClient,
 			baseURL+EventServiceListUpcomingOwnedEventsProcedure,
@@ -122,6 +133,7 @@ func NewEventServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 type eventServiceClient struct {
 	createEvent               *connect.Client[v1.CreateEventRequest, v1.CreateEventResponse]
 	getEvent                  *connect.Client[v1.GetEventRequest, v1.GetEventResponse]
+	updateEvent               *connect.Client[v1.UpdateEventRequest, v1.UpdateEventResponse]
 	listUpcomingOwnedEvents   *connect.Client[v1.ListUpcomingOwnedEventsRequest, v1.ListUpcomingOwnedEventsResponse]
 	listUpcomingInvitedEvents *connect.Client[v1.ListUpcomingInvitedEventsRequest, v1.ListUpcomingInvitedEventsResponse]
 	listPastEvents            *connect.Client[v1.ListPastEventsRequest, v1.ListPastEventsResponse]
@@ -135,6 +147,11 @@ func (c *eventServiceClient) CreateEvent(ctx context.Context, req *connect.Reque
 // GetEvent calls eventurely.v1.EventService.GetEvent.
 func (c *eventServiceClient) GetEvent(ctx context.Context, req *connect.Request[v1.GetEventRequest]) (*connect.Response[v1.GetEventResponse], error) {
 	return c.getEvent.CallUnary(ctx, req)
+}
+
+// UpdateEvent calls eventurely.v1.EventService.UpdateEvent.
+func (c *eventServiceClient) UpdateEvent(ctx context.Context, req *connect.Request[v1.UpdateEventRequest]) (*connect.Response[v1.UpdateEventResponse], error) {
+	return c.updateEvent.CallUnary(ctx, req)
 }
 
 // ListUpcomingOwnedEvents calls eventurely.v1.EventService.ListUpcomingOwnedEvents.
@@ -156,6 +173,7 @@ func (c *eventServiceClient) ListPastEvents(ctx context.Context, req *connect.Re
 type EventServiceHandler interface {
 	CreateEvent(context.Context, *connect.Request[v1.CreateEventRequest]) (*connect.Response[v1.CreateEventResponse], error)
 	GetEvent(context.Context, *connect.Request[v1.GetEventRequest]) (*connect.Response[v1.GetEventResponse], error)
+	UpdateEvent(context.Context, *connect.Request[v1.UpdateEventRequest]) (*connect.Response[v1.UpdateEventResponse], error)
 	ListUpcomingOwnedEvents(context.Context, *connect.Request[v1.ListUpcomingOwnedEventsRequest]) (*connect.Response[v1.ListUpcomingOwnedEventsResponse], error)
 	ListUpcomingInvitedEvents(context.Context, *connect.Request[v1.ListUpcomingInvitedEventsRequest]) (*connect.Response[v1.ListUpcomingInvitedEventsResponse], error)
 	ListPastEvents(context.Context, *connect.Request[v1.ListPastEventsRequest]) (*connect.Response[v1.ListPastEventsResponse], error)
@@ -177,6 +195,12 @@ func NewEventServiceHandler(svc EventServiceHandler, opts ...connect.HandlerOpti
 		EventServiceGetEventProcedure,
 		svc.GetEvent,
 		connect.WithSchema(eventServiceGetEventMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	eventServiceUpdateEventHandler := connect.NewUnaryHandler(
+		EventServiceUpdateEventProcedure,
+		svc.UpdateEvent,
+		connect.WithSchema(eventServiceUpdateEventMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
 	eventServiceListUpcomingOwnedEventsHandler := connect.NewUnaryHandler(
@@ -203,6 +227,8 @@ func NewEventServiceHandler(svc EventServiceHandler, opts ...connect.HandlerOpti
 			eventServiceCreateEventHandler.ServeHTTP(w, r)
 		case EventServiceGetEventProcedure:
 			eventServiceGetEventHandler.ServeHTTP(w, r)
+		case EventServiceUpdateEventProcedure:
+			eventServiceUpdateEventHandler.ServeHTTP(w, r)
 		case EventServiceListUpcomingOwnedEventsProcedure:
 			eventServiceListUpcomingOwnedEventsHandler.ServeHTTP(w, r)
 		case EventServiceListUpcomingInvitedEventsProcedure:
@@ -224,6 +250,10 @@ func (UnimplementedEventServiceHandler) CreateEvent(context.Context, *connect.Re
 
 func (UnimplementedEventServiceHandler) GetEvent(context.Context, *connect.Request[v1.GetEventRequest]) (*connect.Response[v1.GetEventResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("eventurely.v1.EventService.GetEvent is not implemented"))
+}
+
+func (UnimplementedEventServiceHandler) UpdateEvent(context.Context, *connect.Request[v1.UpdateEventRequest]) (*connect.Response[v1.UpdateEventResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("eventurely.v1.EventService.UpdateEvent is not implemented"))
 }
 
 func (UnimplementedEventServiceHandler) ListUpcomingOwnedEvents(context.Context, *connect.Request[v1.ListUpcomingOwnedEventsRequest]) (*connect.Response[v1.ListUpcomingOwnedEventsResponse], error) {
