@@ -4,6 +4,7 @@ type ResponseStatus string
 
 const (
 	ResponseStatusSent  ResponseStatus = "Sent"
+	ResponseStatusSeen  ResponseStatus = "Seen"
 	ResponseStatusYes   ResponseStatus = "Yes"
 	ResponseStatusNo    ResponseStatus = "No"
 	ResponseStatusMaybe ResponseStatus = "Maybe"

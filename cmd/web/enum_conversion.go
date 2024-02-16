@@ -11,6 +11,8 @@ func responseStatusToProtoEnum(status models.ResponseStatus) (pb.ResponseStatus,
 	switch status {
 	case models.ResponseStatusSent:
 		return pb.ResponseStatus_RESPONSE_STATUS_SENT, nil
+	case models.ResponseStatusSeen:
+		return pb.ResponseStatus_RESPONSE_STATUS_SEEN, nil
 	case models.ResponseStatusYes:
 		return pb.ResponseStatus_RESPONSE_STATUS_YES, nil
 	case models.ResponseStatusNo:
@@ -26,6 +28,8 @@ func responseStatusFromProtoEnum(status pb.ResponseStatus) (models.ResponseStatu
 	switch status {
 	case pb.ResponseStatus_RESPONSE_STATUS_SENT:
 		return models.ResponseStatusSent, nil
+	case pb.ResponseStatus_RESPONSE_STATUS_SEEN:
+		return models.ResponseStatusSeen, nil
 	case pb.ResponseStatus_RESPONSE_STATUS_YES:
 		return models.ResponseStatusYes, nil
 	case pb.ResponseStatus_RESPONSE_STATUS_NO:
