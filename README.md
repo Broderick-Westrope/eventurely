@@ -83,7 +83,7 @@ Coming soon...
 - [x] **CreateEvent**: create a new event.
 - [x] **UpdateEvent**: edit an event that the user owns.
   - [ ] Add authorization check by receiving the user ID as well as event ID.
-- [ ] **DeleteEvents**: delete one or more events that the user owns.
+- [x] **DeleteEvents**: delete one or more events that the user owns.
   - [ ] Add authorization check by receiving the user ID as well as event ID.
 - [ ] invite a user to an event.
   - ! This (and similar invite endpoints) will likely not be its own endpoint, but rather a part of the event creation/editing process.
