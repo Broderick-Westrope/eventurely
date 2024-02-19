@@ -211,7 +211,7 @@ func (app *application) ListUpcomingInvitedEvents(
 
 	return &connect.Response[pb.ListUpcomingInvitedEventsResponse]{
 		Msg: &pb.ListUpcomingInvitedEventsResponse{
-			Events: pbEvents,
+			InvitedEvents: pbEvents,
 		},
 	}, nil
 }
