@@ -7,7 +7,7 @@ vars:
 tasks:
   build:
     cmds:
-      - go build -o ./bin/ ./cmd/web/
+      - go build -o ./bin/ {{.MAIN_DIR}}
 
   test:
     cmds:
@@ -15,7 +15,7 @@ tasks:
 
   run:
     cmds:
-      - go run {{.CLI_ARGS}} ./cmd/web/main.go
+      - go run {{.CLI_ARGS}} {{.MAIN_DIR}}
 
   clean:
     cmds:
@@ -39,6 +39,10 @@ tasks:
   vuln:
     cmds:
       - govulncheck -test {{.MAIN_DIR}}...
+
+  cert:
+    cmds:
+      - cd ./cert && ./gen.sh
 
   all:
     deps:
