@@ -1,0 +1,50 @@
+version: '3'
+
+vars:
+  MAIN_DIR: ./cmd/web/
+  PROTO_DIR: ./proto
+
+tasks:
+  build:
+    cmds:
+      - go build -o ./bin/ ./cmd/web/
+
+  test:
+    cmds:
+      - go test {{.CLI_ARGS}} -race ./...
+
+  run:
+    cmds:
+      - go run {{.CLI_ARGS}} ./cmd/web/main.go
+
+  clean:
+    cmds:
+      - rm -rf ./bin/
+
+  setup:
+    cmds:
+      # Ensures go.mod is tidy
+      - go mod tidy
+      # Downloads any missing dependencies
+      - go mod download
+
+  format:
+    cmds:
+      - gofmt -s -w {{.MAIN_DIR}}
+
+  vet:
+    cmds:
+      - go vet {{.MAIN_DIR}}...
+
+  vuln:
+    cmds:
+      - govulncheck -test {{.MAIN_DIR}}...
+
+  all:
+    deps:
+      - setup
+      - format
+      - vet
+      - vuln
+      - test
+      - build
