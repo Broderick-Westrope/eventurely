@@ -162,3 +162,5 @@ fabric.properties
 *.db
 # Air Hot Reloader Build Files
 tmp/
+# Binary Files
+bin/
