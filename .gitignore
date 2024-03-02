@@ -164,3 +164,6 @@ fabric.properties
 tmp/
 # Binary Files
 bin/
+# Certificate Files except the generator script
+cert/*
+!cert/gen.sh

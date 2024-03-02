@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"log/slog"
 	"net/http"
@@ -23,6 +24,7 @@ type application struct {
 func main() {
 	addr := flag.String("addr", ":2000", "HTTP network address")
 	dsn := flag.String("dsn", "file:test.db", "SQLite data source name")
+	enableTLS := flag.Bool("tls", false, "enable SSL/TLS")
 	flag.Parse()
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
@@ -46,12 +48,36 @@ func main() {
 		app.loggingInterceptor(),
 	)
 
-	err = http.ListenAndServe(
-		*addr,
-		h2c.NewHandler(app.routes(opts), &http2.Server{}),
-	)
-	app.logger.Error(err.Error())
-	os.Exit(1)
+	var server *http.Server
+	if *enableTLS {
+		var tlsConfig *tls.Config
+		tlsConfig, err = loadTLSConfig()
+		if err != nil {
+			logger.Error("failed to load TLS credentials", slog.AnyValue(err))
+			os.Exit(1)
+		}
+
+		server = &http.Server{
+			Addr:      *addr,
+			Handler:   h2c.NewHandler(app.routes(opts), &http2.Server{}),
+			TLSConfig: tlsConfig,
+		}
+
+		app.logger.Info("TLS is enabled")
+		err = server.ListenAndServeTLS("", "") // The paths are already provided in TLSConfig
+	} else {
+		server = &http.Server{
+			Addr:    *addr,
+			Handler: h2c.NewHandler(app.routes(opts), &http2.Server{}),
+		}
+
+		err = server.ListenAndServe()
+	}
+
+	if err != nil {
+		app.logger.Error(err.Error())
+		os.Exit(1)
+	}
 }
 
 func openDB(dsn string) (*sql.DB, error) {
@@ -66,4 +92,20 @@ func openDB(dsn string) (*sql.DB, error) {
 	}
 
 	return db, nil
+}
+
+func loadTLSConfig() (*tls.Config, error) {
+	// Load server's certificate and private key
+	serverCert, err := tls.LoadX509KeyPair("cert/server-cert.pem", "cert/server-key.pem")
+	if err != nil {
+		return nil, err
+	}
+
+	// Create the credentials and return it
+	config := &tls.Config{
+		Certificates: []tls.Certificate{serverCert},
+		ClientAuth:   tls.NoClientCert,
+	}
+
+	return config, nil
 }
