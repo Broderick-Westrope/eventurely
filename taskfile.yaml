@@ -44,9 +44,14 @@ tasks:
     cmds:
       - cd ./cert && ./gen.sh
 
+  proto:
+    cmds:
+      - buf generate proto/
+
   all:
     deps:
       - setup
+      - proto
       - format
       - vet
       - vuln
