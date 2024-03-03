@@ -1,0 +1,15 @@
+output_path: ./internal/
+enums:
+  - package: data
+    type: ResponseStatus
+    values:
+      - "Sent"
+      - "Seen"
+      - "Yes"
+      - "No"
+      - "Maybe"
+  - package: data
+    type: PrivacySetting
+    values:
+      - "Public"
+      - "Private"

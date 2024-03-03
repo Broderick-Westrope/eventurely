@@ -44,14 +44,28 @@ tasks:
     cmds:
       - cd ./cert && ./gen.sh
 
-  proto:
+  gen-proto:
     cmds:
-      - buf generate proto/
+      - buf generate ./proto/
+
+  gen-sql:
+    cmds:
+      - sqlc generate
+
+  gen-enums:
+    cmds:
+      - goenums ./goenums.yaml
+
+  gen:
+    deps:
+      - gen-proto
+      - gen-sql
+      - gen-enums
 
   all:
     deps:
       - setup
-      - proto
+      - gen
       - format
       - vet
       - vuln
