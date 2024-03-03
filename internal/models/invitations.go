@@ -1,12 +1,16 @@
 package models
 
 import (
-	"database/sql"
+	"context"
 	"time"
+
+	"github.com/Broderick-Westrope/eventurely/internal/data"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type InvitationRepository interface {
-	UpdateResponseStatus(invitationID int64, responseStatus ResponseStatus) (int64, error)
+	UpdateResponseStatus(ctx context.Context, invitationID int32, responseStatus ResponseStatus) error
 }
 
 type Invitation struct {
@@ -19,30 +23,30 @@ type Invitation struct {
 }
 
 type invitationModel struct {
-	DB *sql.DB
+	q *data.Queries
 }
 
-func NewInvitationRepository(db *sql.DB) InvitationRepository {
-	return &invitationModel{DB: db}
+func NewInvitationRepository(conn *pgx.Conn) InvitationRepository {
+	return &invitationModel{q: data.New(conn)}
 }
 
-func (m *invitationModel) UpdateResponseStatus(invitationID int64, responseStatus ResponseStatus) (int64, error) {
-	stmt := `UPDATE Invitation
-	SET Status = ?, RespondedAt = ?
-	WHERE ID = ?`
-
-	// If the user is resetting their response, reset the response time
-	var respondedAt any
+func (m *invitationModel) UpdateResponseStatus(ctx context.Context, invitationID int32, responseStatus ResponseStatus) error {
+	var respondedAt pgtype.Timestamptz
 	if responseStatus == ResponseStatusSent {
-		respondedAt = nil
+		respondedAt = pgtype.Timestamptz{Valid: false}
 	} else {
-		respondedAt = time.Now()
+		respondedAt = pgtype.Timestamptz{Time: time.Now(), Valid: true}
 	}
 
-	result, err := m.DB.Exec(stmt, responseStatus, respondedAt, invitationID)
+	params := data.UpdateInvitationResponseStatusParams{
+		ID:          invitationID,
+		Status:      string(responseStatus),
+		RespondedAt: respondedAt,
+	}
+
+	err := m.q.UpdateInvitationResponseStatus(ctx, params)
 	if err != nil {
-		return 0, err
+		return err
 	}
-
-	return result.RowsAffected()
+	return nil
 }

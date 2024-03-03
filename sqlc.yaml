@@ -1,0 +1,13 @@
+version: "2"
+cloud:
+sql:
+  - engine: "postgresql"
+    queries: "queries.sql"
+    schema: "schema.sql"
+    database:
+      uri: postgresql://broderick:${PG_PASSWORD}@az-postgres-eventurely.postgres.database.azure.com:5432/eventurely.v1?sslmode=require
+    gen:
+      go:
+        package: "data"
+        out: "internal/data"
+        sql_package: "pgx/v5"

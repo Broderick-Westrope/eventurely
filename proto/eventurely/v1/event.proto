@@ -36,8 +36,8 @@ enum PrivacySetting {
 }
 
 message Event {
-  int64 id = 1;
-  int64 owner_id = 2;
+  int32 id = 1;
+  int32 owner_id = 2;
   string title = 3;
   string description = 4;
   google.protobuf.Timestamp starts_at = 5;
@@ -55,7 +55,7 @@ message InvitedEvent {
 // REQUESTS & RESPONSES
 
 message CreateEventRequest {
-  int64 owner_id = 1;
+  int32 owner_id = 1;
   string title = 2;
   string description = 3;
   google.protobuf.Timestamp starts_at = 4;
@@ -65,12 +65,10 @@ message CreateEventRequest {
   PrivacySetting privacy_setting = 8;
 }
 
-message CreateEventResponse {
-  int64 event_id = 1;
-}
+message CreateEventResponse {}
 
 message GetEventRequest {
-  int64 event_id = 1;
+  int32 event_id = 1;
 }
 
 message GetEventResponse {
@@ -78,7 +76,7 @@ message GetEventResponse {
 }
 
 message UpdateEventRequest {
-  int64  event_id = 1;
+  int32  event_id = 1;
   string title = 2;
   string description = 3;
   google.protobuf.Timestamp starts_at = 4;
@@ -87,20 +85,16 @@ message UpdateEventRequest {
   PrivacySetting privacy_setting = 8;
 }
 
-message UpdateEventResponse {
-  int64 rows_affected = 1;
-}
+message UpdateEventResponse {}
 
 message DeleteEventRequest {
-  repeated int64 event_ids = 1;
+   int32 event_id = 1;
 }
 
-message DeleteEventResponse {
-  int64 rows_affected = 1;
-}
+message DeleteEventResponse {}
 
 message ListUpcomingOwnedEventsRequest {
-  int64 user_id = 1;
+  int32 user_id = 1;
 }
 
 message ListUpcomingOwnedEventsResponse {
@@ -108,7 +102,7 @@ message ListUpcomingOwnedEventsResponse {
 }
 
 message ListUpcomingInvitedEventsRequest {
-  int64 user_id = 1;
+  int32 user_id = 1;
 }
 
 message ListUpcomingInvitedEventsResponse {
@@ -116,7 +110,7 @@ message ListUpcomingInvitedEventsResponse {
 }
 
 message ListPastEventsRequest {
-  int64 user_id = 1;
+  int32 user_id = 1;
 }
 
 message ListPastEventsResponse {
@@ -124,10 +118,10 @@ message ListPastEventsResponse {
 }
 
 message UpdateInvitationStatusRequest {
-  int64 invitation_id = 1;
+  int32 invitation_id = 1;
   ResponseStatus status = 2;
 }
 
 message UpdateInvitationStatusResponse {
-  int64 rows_affected = 1;
+  int32 rows_affected = 1;
 }

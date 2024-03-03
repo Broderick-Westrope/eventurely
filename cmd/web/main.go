@@ -1,14 +1,15 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
-	"database/sql"
 	"log/slog"
 	"net/http"
 	"os"
 
 	"connectrpc.com/connect"
 	"github.com/Broderick-Westrope/eventurely/internal/models"
+	"github.com/jackc/pgx/v5"
 	_ "github.com/mattn/go-sqlite3"
 	flag "github.com/spf13/pflag"
 	"golang.org/x/net/http2"
@@ -23,23 +24,30 @@ type application struct {
 
 func main() {
 	addr := flag.String("addr", ":2000", "HTTP network address")
-	dsn := flag.String("dsn", "file:test.db", "SQLite data source name")
+	dsn := flag.String("dsn", "file:test.conn", "SQLite data source name")
 	enableTLS := flag.Bool("tls", false, "enable SSL/TLS")
 	flag.Parse()
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	ctx := context.Background()
 
-	db, err := openDB(*dsn)
+	conn, err := pgx.Connect(ctx, *dsn)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error("unable to connect to database", slog.AnyValue(err))
 		os.Exit(1)
 	}
-	defer db.Close()
+	defer func(conn *pgx.Conn, ctx context.Context) {
+		err = conn.Close(ctx)
+		if err != nil {
+			logger.Error("unable to close database connection", slog.AnyValue(err))
+			os.Exit(1)
+		}
+	}(conn, ctx)
 
 	app := &application{
 		logger:      logger,
-		events:      models.NewEventRepository(db),
-		invitations: models.NewInvitationRepository(db),
+		events:      models.NewEventRepository(conn),
+		invitations: models.NewInvitationRepository(conn),
 	}
 
 	app.logger.Info("starting server", slog.String("addr", *addr))
@@ -78,20 +86,6 @@ func main() {
 		app.logger.Error(err.Error())
 		os.Exit(1)
 	}
-}
-
-func openDB(dsn string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", dsn)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = db.Ping(); err != nil {
-		db.Close()
-		return nil, err
-	}
-
-	return db, nil
 }
 
 func loadTLSConfig() (*tls.Config, error) {

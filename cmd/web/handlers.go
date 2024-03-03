@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"connectrpc.com/connect"
 	pb "github.com/Broderick-Westrope/eventurely/gen/eventurely/v1"
@@ -20,7 +19,8 @@ func (app *application) CreateEvent(
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	id, err := app.events.Create(
+	err = app.events.Create(
+		ctx,
 		req.Msg.GetOwnerId(),
 		req.Msg.GetTitle(),
 		req.Msg.GetDescription(),
@@ -35,9 +35,7 @@ func (app *application) CreateEvent(
 	}
 
 	return &connect.Response[pb.CreateEventResponse]{
-		Msg: &pb.CreateEventResponse{
-			EventId: id,
-		},
+		Msg: &pb.CreateEventResponse{},
 	}, nil
 }
 
@@ -45,7 +43,7 @@ func (app *application) GetEvent(
 	ctx context.Context,
 	req *connect.Request[pb.GetEventRequest],
 ) (*connect.Response[pb.GetEventResponse], error) {
-	event, err := app.events.Get(req.Msg.GetEventId())
+	event, err := app.events.Get(ctx, req.Msg.GetEventId())
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
@@ -84,7 +82,8 @@ func (app *application) UpdateEvent(
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	rowsAffected, err := app.events.Update(
+	err = app.events.Update(
+		ctx,
 		req.Msg.GetEventId(),
 		req.Msg.GetTitle(),
 		req.Msg.GetDescription(),
@@ -97,14 +96,8 @@ func (app *application) UpdateEvent(
 		return nil, app.serverError(req, err)
 	}
 
-	if rowsAffected == 0 {
-		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("no events found with matching IDs"))
-	}
-
 	return &connect.Response[pb.UpdateEventResponse]{
-		Msg: &pb.UpdateEventResponse{
-			RowsAffected: rowsAffected,
-		},
+		Msg: &pb.UpdateEventResponse{},
 	}, nil
 }
 
@@ -112,24 +105,13 @@ func (app *application) DeleteEvent(
 	ctx context.Context,
 	req *connect.Request[pb.DeleteEventRequest],
 ) (*connect.Response[pb.DeleteEventResponse], error) {
-	rowsAffected := int64(0)
-
-	for _, id := range req.Msg.GetEventIds() {
-		count, err := app.events.Delete(id)
-		if err != nil {
-			return nil, app.serverError(req, err)
-		}
-		rowsAffected += count
-	}
-
-	if rowsAffected == 0 {
-		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("no events found with matching IDs"))
+	err := app.events.Delete(ctx, req.Msg.GetEventId())
+	if err != nil {
+		return nil, app.serverError(req, err)
 	}
 
 	return &connect.Response[pb.DeleteEventResponse]{
-		Msg: &pb.DeleteEventResponse{
-			RowsAffected: rowsAffected,
-		},
+		Msg: &pb.DeleteEventResponse{},
 	}, nil
 }
 
@@ -137,7 +119,7 @@ func (app *application) ListUpcomingOwnedEvents(
 	ctx context.Context,
 	req *connect.Request[pb.ListUpcomingOwnedEventsRequest],
 ) (*connect.Response[pb.ListUpcomingOwnedEventsResponse], error) {
-	events, err := app.events.ListUpcomingOwned(req.Msg.GetUserId())
+	events, err := app.events.ListUpcomingOwned(ctx, req.Msg.GetUserId())
 	if err != nil {
 		return nil, app.serverError(req, err)
 	}
@@ -174,7 +156,7 @@ func (app *application) ListUpcomingInvitedEvents(
 	ctx context.Context,
 	req *connect.Request[pb.ListUpcomingInvitedEventsRequest],
 ) (*connect.Response[pb.ListUpcomingInvitedEventsResponse], error) {
-	events, err := app.events.ListUpcomingInvited(req.Msg.GetUserId())
+	events, err := app.events.ListUpcomingInvited(ctx, req.Msg.GetUserId())
 	if err != nil {
 		return nil, app.serverError(req, err)
 	}
@@ -220,7 +202,7 @@ func (app *application) ListPastEvents(
 	ctx context.Context,
 	req *connect.Request[pb.ListPastEventsRequest],
 ) (*connect.Response[pb.ListPastEventsResponse], error) {
-	events, err := app.events.ListPast(req.Msg.GetUserId())
+	events, err := app.events.ListPast(ctx, req.Msg.GetUserId())
 	if err != nil {
 		return nil, app.serverError(req, err)
 	}
@@ -262,18 +244,12 @@ func (app *application) UpdateInvitationStatus(
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	rowsAffected, err := app.invitations.UpdateResponseStatus(req.Msg.GetInvitationId(), responseStatus)
+	err = app.invitations.UpdateResponseStatus(ctx, req.Msg.GetInvitationId(), responseStatus)
 	if err != nil {
 		return nil, app.serverError(req, err)
 	}
 
-	if rowsAffected == 0 {
-		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("no events found with matching IDs"))
-	}
-
 	return &connect.Response[pb.UpdateInvitationStatusResponse]{
-		Msg: &pb.UpdateInvitationStatusResponse{
-			RowsAffected: rowsAffected,
-		},
+		Msg: &pb.UpdateInvitationStatusResponse{},
 	}, nil
 }
