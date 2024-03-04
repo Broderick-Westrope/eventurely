@@ -10,7 +10,7 @@ import (
 )
 
 type InvitationRepository interface {
-	UpdateResponseStatus(ctx context.Context, invitationID int32, responseStatus ResponseStatus) error
+	UpdateResponseStatus(ctx context.Context, invitationID int32, responseStatus data.Responsestatus) error
 }
 
 type Invitation struct {
@@ -19,7 +19,7 @@ type Invitation struct {
 	UserID      int64
 	SentAt      time.Time
 	RespondedAt time.Time
-	Status      ResponseStatus
+	Status      data.Responsestatus
 }
 
 type invitationModel struct {
@@ -30,9 +30,9 @@ func NewInvitationRepository(conn *pgx.Conn) InvitationRepository {
 	return &invitationModel{q: data.New(conn)}
 }
 
-func (m *invitationModel) UpdateResponseStatus(ctx context.Context, invitationID int32, responseStatus ResponseStatus) error {
+func (m *invitationModel) UpdateResponseStatus(ctx context.Context, invitationID int32, responseStatus data.Responsestatus) error {
 	var respondedAt pgtype.Timestamptz
-	if responseStatus == ResponseStatusSent {
+	if responseStatus == data.Responsestatuses.SENT {
 		respondedAt = pgtype.Timestamptz{Valid: false}
 	} else {
 		respondedAt = pgtype.Timestamptz{Time: time.Now(), Valid: true}
@@ -40,7 +40,7 @@ func (m *invitationModel) UpdateResponseStatus(ctx context.Context, invitationID
 
 	params := data.UpdateInvitationResponseStatusParams{
 		ID:          invitationID,
-		Status:      string(responseStatus),
+		Status:      responseStatus.String(),
 		RespondedAt: respondedAt,
 	}
 

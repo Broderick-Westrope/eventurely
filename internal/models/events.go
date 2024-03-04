@@ -13,11 +13,11 @@ import (
 
 type EventRepository interface {
 	// Create adds a new event to the database.
-	Create(ctx context.Context, ownerId int32, title, description, location, uniqueLink string, startsAt, endsAt time.Time, privacySetting PrivacySetting) error
+	Create(ctx context.Context, ownerId int32, title, description, location, uniqueLink string, startsAt, endsAt time.Time, privacySetting data.Privacysetting) (int32, error)
 	// Get returns the event with the specified ID.
 	Get(ctx context.Context, ID int32) (*Event, error)
 	// Update updates the contents of the event with the matching ID
-	Update(ctx context.Context, eventID int32, title, description, location string, startsAt, endsAt time.Time, privacySetting PrivacySetting) error
+	Update(ctx context.Context, eventID int32, title, description, location string, startsAt, endsAt time.Time, privacySetting data.Privacysetting) error
 	// Delete deletes all events with the matching ID
 	Delete(ctx context.Context, eventID int32) error
 	// ListUpcomingOwned returns all events that will start after the current time.
@@ -37,7 +37,7 @@ type Event struct {
 	EndsAt         time.Time
 	Location       string
 	UniqueLink     string
-	PrivacySetting PrivacySetting
+	PrivacySetting data.Privacysetting
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 }
@@ -52,7 +52,7 @@ func mapToEvent(e data.Event) *Event {
 		EndsAt:         e.EndsAt.Time,
 		Location:       e.Location.String,
 		UniqueLink:     e.UniqueLink.String,
-		PrivacySetting: PrivacySetting(e.PrivacySetting),
+		PrivacySetting: data.ParsePrivacysetting(e.PrivacySetting),
 		CreatedAt:      e.CreatedAt.Time,
 		UpdatedAt:      e.UpdatedAt.Time,
 	}
@@ -60,7 +60,7 @@ func mapToEvent(e data.Event) *Event {
 
 type InvitedEvent struct {
 	Event
-	Status ResponseStatus
+	Status data.Responsestatus
 }
 
 func mapToInvitedEvent(e data.ListUpcomingInvitedEventsRow) *InvitedEvent {
@@ -74,11 +74,11 @@ func mapToInvitedEvent(e data.ListUpcomingInvitedEventsRow) *InvitedEvent {
 			EndsAt:         e.EndsAt.Time,
 			Location:       e.Location.String,
 			UniqueLink:     e.UniqueLink.String,
-			PrivacySetting: PrivacySetting(e.PrivacySetting),
+			PrivacySetting: data.ParsePrivacysetting(e.PrivacySetting),
 			CreatedAt:      e.CreatedAt.Time,
 			UpdatedAt:      e.UpdatedAt.Time,
 		},
-		Status: ResponseStatus(e.Status),
+		Status: data.ParseResponsestatus(e.Status),
 	}
 }
 
@@ -90,7 +90,7 @@ func NewEventRepository(conn *pgx.Conn) EventRepository {
 	return &eventModel{q: data.New(conn)}
 }
 
-func (m *eventModel) Create(ctx context.Context, ownerId int32, title, description, location, uniqueLink string, startsAt, endsAt time.Time, privacySetting PrivacySetting) error {
+func (m *eventModel) Create(ctx context.Context, ownerId int32, title, description, location, uniqueLink string, startsAt, endsAt time.Time, privacySetting data.Privacysetting) (int32, error) {
 	params := data.CreateEventParams{
 		OwnerID:        ownerId,
 		Title:          title,
@@ -99,15 +99,15 @@ func (m *eventModel) Create(ctx context.Context, ownerId int32, title, descripti
 		EndsAt:         pgtype.Timestamptz{Time: endsAt, Valid: true},
 		Location:       pgtype.Text{String: location, Valid: true},
 		UniqueLink:     pgtype.Text{String: uniqueLink, Valid: true},
-		PrivacySetting: string(privacySetting),
+		PrivacySetting: privacySetting.String(),
 		CreatedAt:      pgtype.Timestamptz{Time: time.Now(), Valid: true},
 		UpdatedAt:      pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	}
-	err := m.q.CreateEvent(ctx, params)
+	id, err := m.q.CreateEvent(ctx, params)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return id, nil
 }
 
 func (m *eventModel) Get(ctx context.Context, ID int32) (*Event, error) {
@@ -122,7 +122,7 @@ func (m *eventModel) Get(ctx context.Context, ID int32) (*Event, error) {
 	return mapToEvent(event), nil
 }
 
-func (m *eventModel) Update(ctx context.Context, eventID int32, title, description, location string, startsAt, endsAt time.Time, privacySetting PrivacySetting) error {
+func (m *eventModel) Update(ctx context.Context, eventID int32, title, description, location string, startsAt, endsAt time.Time, privacySetting data.Privacysetting) error {
 	params := data.UpdateEventParams{
 		ID:             eventID,
 		Title:          title,
@@ -130,7 +130,7 @@ func (m *eventModel) Update(ctx context.Context, eventID int32, title, descripti
 		StartsAt:       pgtype.Timestamptz{Time: startsAt, Valid: true},
 		EndsAt:         pgtype.Timestamptz{Time: endsAt, Valid: true},
 		Location:       pgtype.Text{String: location, Valid: true},
-		PrivacySetting: string(privacySetting),
+		PrivacySetting: privacySetting.String(),
 		UpdatedAt:      pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	}
 	err := m.q.UpdateEvent(ctx, params)

@@ -15,7 +15,7 @@ tasks:
 
   run:
     cmds:
-      - go run {{.CLI_ARGS}} {{.MAIN_DIR}}
+      - go run {{.MAIN_DIR}} {{.CLI_ARGS}}
 
   clean:
     cmds:

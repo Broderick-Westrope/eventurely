@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS "events"
     ends_at         TIMESTAMP WITH TIME ZONE,
     location        TEXT,
     unique_link     TEXT UNIQUE,
-    privacy_setting TEXT CHECK (privacy_setting IN ('Public', 'Private')) NOT NULL DEFAULT 'Private',
+    privacy_setting TEXT CHECK (privacy_setting IN ('PUBLIC', 'PRIVATE')) NOT NULL DEFAULT 'PRIVATE',
     created_at      TIMESTAMP WITH TIME ZONE                                       DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP WITH TIME ZONE                                       DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (owner_id) REFERENCES "users" (id)
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS "invitations"
     user_id      INTEGER                                               NOT NULL,
     sent_at      TIMESTAMP WITH TIME ZONE                                       DEFAULT CURRENT_TIMESTAMP,
     responded_at TIMESTAMP WITH TIME ZONE,
-    status       TEXT CHECK (status IN ('Sent', 'Yes', 'No', 'Maybe')) NOT NULL DEFAULT 'Sent',
+    status       TEXT CHECK (status IN ('SENT', 'YES', 'NO', 'MAYBE')) NOT NULL DEFAULT 'SENT',
     FOREIGN KEY (event_id) REFERENCES "events" (id),
     FOREIGN KEY (user_id) REFERENCES "users" (id)
 );

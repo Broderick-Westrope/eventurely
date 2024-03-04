@@ -1,8 +1,8 @@
--- name: CreateEvent :exec
+-- name: CreateEvent :one
 INSERT INTO events (owner_id, title, description, starts_at, ends_at, location, unique_link, privacy_setting,
                     created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-RETURNING *;
+RETURNING id;
 
 -- name: GetEvent :one
 SELECT *

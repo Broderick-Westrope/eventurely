@@ -19,7 +19,7 @@ func (app *application) CreateEvent(
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	err = app.events.Create(
+	id, err := app.events.Create(
 		ctx,
 		req.Msg.GetOwnerId(),
 		req.Msg.GetTitle(),
@@ -35,7 +35,9 @@ func (app *application) CreateEvent(
 	}
 
 	return &connect.Response[pb.CreateEventResponse]{
-		Msg: &pb.CreateEventResponse{},
+		Msg: &pb.CreateEventResponse{
+			EventId: id,
+		},
 	}, nil
 }
 

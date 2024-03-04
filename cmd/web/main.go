@@ -23,8 +23,12 @@ type application struct {
 }
 
 func main() {
+	flag.Usage = func() {
+		_, _ = os.Stderr.WriteString("Usage: eventurely [flags]\n")
+		flag.PrintDefaults()
+	}
 	addr := flag.String("addr", ":2000", "HTTP network address")
-	dsn := flag.String("dsn", "file:test.conn", "SQLite data source name")
+	dsn := flag.String("dsn", "postgresql://username:password@host:5432/database?sslmode=require", "PostgreSQL data source name")
 	enableTLS := flag.Bool("tls", false, "enable SSL/TLS")
 	flag.Parse()
 

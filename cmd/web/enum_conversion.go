@@ -4,61 +4,61 @@ import (
 	"fmt"
 
 	pb "github.com/Broderick-Westrope/eventurely/gen/eventurely/v1"
-	"github.com/Broderick-Westrope/eventurely/internal/models"
+	"github.com/Broderick-Westrope/eventurely/internal/data"
 )
 
-func responseStatusToProtoEnum(status models.ResponseStatus) (pb.ResponseStatus, error) {
+func responseStatusToProtoEnum(status data.Responsestatus) (pb.ResponseStatus, error) {
 	switch status {
-	case models.ResponseStatusSent:
+	case data.Responsestatuses.SENT:
 		return pb.ResponseStatus_RESPONSE_STATUS_SENT, nil
-	case models.ResponseStatusSeen:
+	case data.Responsestatuses.SEEN:
 		return pb.ResponseStatus_RESPONSE_STATUS_SEEN, nil
-	case models.ResponseStatusYes:
+	case data.Responsestatuses.YES:
 		return pb.ResponseStatus_RESPONSE_STATUS_YES, nil
-	case models.ResponseStatusNo:
+	case data.Responsestatuses.NO:
 		return pb.ResponseStatus_RESPONSE_STATUS_NO, nil
-	case models.ResponseStatusMaybe:
+	case data.Responsestatuses.MAYBE:
 		return pb.ResponseStatus_RESPONSE_STATUS_MAYBE, nil
 	default:
 		return 0, fmt.Errorf("invalid invitation status: %s", status)
 	}
 }
 
-func responseStatusFromProtoEnum(status pb.ResponseStatus) (models.ResponseStatus, error) {
+func responseStatusFromProtoEnum(status pb.ResponseStatus) (data.Responsestatus, error) {
 	switch status {
 	case pb.ResponseStatus_RESPONSE_STATUS_SENT:
-		return models.ResponseStatusSent, nil
+		return data.Responsestatuses.SENT, nil
 	case pb.ResponseStatus_RESPONSE_STATUS_SEEN:
-		return models.ResponseStatusSeen, nil
+		return data.Responsestatuses.SEEN, nil
 	case pb.ResponseStatus_RESPONSE_STATUS_YES:
-		return models.ResponseStatusYes, nil
+		return data.Responsestatuses.YES, nil
 	case pb.ResponseStatus_RESPONSE_STATUS_NO:
-		return models.ResponseStatusNo, nil
+		return data.Responsestatuses.NO, nil
 	case pb.ResponseStatus_RESPONSE_STATUS_MAYBE:
-		return models.ResponseStatusMaybe, nil
+		return data.Responsestatuses.MAYBE, nil
 	default:
-		return "", fmt.Errorf("invalid invitation status: %v", status)
+		return data.Responsestatuses.UNKNOWN, fmt.Errorf("invalid invitation status: %v", status)
 	}
 }
 
-func privacySettingToProtoEnum(setting models.PrivacySetting) (pb.PrivacySetting, error) {
+func privacySettingToProtoEnum(setting data.Privacysetting) (pb.PrivacySetting, error) {
 	switch setting {
-	case models.PrivacySettingPublic:
+	case data.Privacysettings.PUBLIC:
 		return pb.PrivacySetting_PRIVACY_SETTING_PUBLIC, nil
-	case models.PrivacySettingPrivate:
+	case data.Privacysettings.PRIVATE:
 		return pb.PrivacySetting_PRIVACY_SETTING_PRIVATE, nil
 	default:
 		return 0, fmt.Errorf("invalid privacy setting: %s", setting)
 	}
 }
 
-func privacySettingFromProtoEnum(setting pb.PrivacySetting) (models.PrivacySetting, error) {
+func privacySettingFromProtoEnum(setting pb.PrivacySetting) (data.Privacysetting, error) {
 	switch setting {
 	case pb.PrivacySetting_PRIVACY_SETTING_PUBLIC:
-		return models.PrivacySettingPublic, nil
+		return data.Privacysettings.PUBLIC, nil
 	case pb.PrivacySetting_PRIVACY_SETTING_PRIVATE:
-		return models.PrivacySettingPrivate, nil
+		return data.Privacysettings.PRIVATE, nil
 	default:
-		return "", fmt.Errorf("invalid privacy setting: %v", setting)
+		return data.Privacysettings.UNKNOWN, fmt.Errorf("invalid privacy setting: %v", setting)
 	}
 }
