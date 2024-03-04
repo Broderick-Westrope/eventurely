@@ -7,7 +7,7 @@ import (
 	"github.com/Broderick-Westrope/eventurely/internal/data"
 )
 
-func ResponseStatusToProtoEnum(status data.ResponseStatus) (pb.ResponseStatus, error) {
+func responseStatusToProtoEnum(status data.ResponseStatus) (pb.ResponseStatus, error) {
 	switch status {
 	case data.ResponseStatuses.SENT:
 		return pb.ResponseStatus_RESPONSE_STATUS_SENT, nil
@@ -24,7 +24,7 @@ func ResponseStatusToProtoEnum(status data.ResponseStatus) (pb.ResponseStatus, e
 	}
 }
 
-func ResponseStatusFromProtoEnum(status pb.ResponseStatus) (data.ResponseStatus, error) {
+func responseStatusFromProtoEnum(status pb.ResponseStatus) (data.ResponseStatus, error) {
 	switch status {
 	case pb.ResponseStatus_RESPONSE_STATUS_SENT:
 		return data.ResponseStatuses.SENT, nil
@@ -41,7 +41,7 @@ func ResponseStatusFromProtoEnum(status pb.ResponseStatus) (data.ResponseStatus,
 	}
 }
 
-func PrivacySettingToProtoEnum(setting data.PrivacySetting) (pb.PrivacySetting, error) {
+func privacySettingToProtoEnum(setting data.PrivacySetting) (pb.PrivacySetting, error) {
 	switch setting {
 	case data.PrivacySettings.PUBLIC:
 		return pb.PrivacySetting_PRIVACY_SETTING_PUBLIC, nil
@@ -52,7 +52,7 @@ func PrivacySettingToProtoEnum(setting data.PrivacySetting) (pb.PrivacySetting, 
 	}
 }
 
-func PrivacySettingFromProtoEnum(setting pb.PrivacySetting) (data.PrivacySetting, error) {
+func privacySettingFromProtoEnum(setting pb.PrivacySetting) (data.PrivacySetting, error) {
 	switch setting {
 	case pb.PrivacySetting_PRIVACY_SETTING_PUBLIC:
 		return data.PrivacySettings.PUBLIC, nil
