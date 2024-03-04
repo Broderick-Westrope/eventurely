@@ -54,7 +54,7 @@ func main() {
 		invitations: models.NewInvitationRepository(conn),
 	}
 
-	app.logger.Info("starting server", slog.String("addr", *addr))
+	app.logger.Info("starting server", slog.String("addr", *addr), slog.Bool("tls", *enableTLS))
 
 	opts := connect.WithInterceptors(
 		app.loggingInterceptor(),
@@ -75,7 +75,6 @@ func main() {
 			TLSConfig: tlsConfig,
 		}
 
-		app.logger.Info("TLS is enabled")
 		err = server.ListenAndServeTLS("", "") // The paths are already provided in TLSConfig
 	} else {
 		server = &http.Server{
