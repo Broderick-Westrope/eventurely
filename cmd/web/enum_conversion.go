@@ -7,58 +7,58 @@ import (
 	"github.com/Broderick-Westrope/eventurely/internal/data"
 )
 
-func responseStatusToProtoEnum(status data.Responsestatus) (pb.ResponseStatus, error) {
+func ResponseStatusToProtoEnum(status data.ResponseStatus) (pb.ResponseStatus, error) {
 	switch status {
-	case data.Responsestatuses.SENT:
+	case data.ResponseStatuses.SENT:
 		return pb.ResponseStatus_RESPONSE_STATUS_SENT, nil
-	case data.Responsestatuses.SEEN:
+	case data.ResponseStatuses.SEEN:
 		return pb.ResponseStatus_RESPONSE_STATUS_SEEN, nil
-	case data.Responsestatuses.YES:
+	case data.ResponseStatuses.YES:
 		return pb.ResponseStatus_RESPONSE_STATUS_YES, nil
-	case data.Responsestatuses.NO:
+	case data.ResponseStatuses.NO:
 		return pb.ResponseStatus_RESPONSE_STATUS_NO, nil
-	case data.Responsestatuses.MAYBE:
+	case data.ResponseStatuses.MAYBE:
 		return pb.ResponseStatus_RESPONSE_STATUS_MAYBE, nil
 	default:
 		return 0, fmt.Errorf("invalid invitation status: %s", status)
 	}
 }
 
-func responseStatusFromProtoEnum(status pb.ResponseStatus) (data.Responsestatus, error) {
+func ResponseStatusFromProtoEnum(status pb.ResponseStatus) (data.ResponseStatus, error) {
 	switch status {
 	case pb.ResponseStatus_RESPONSE_STATUS_SENT:
-		return data.Responsestatuses.SENT, nil
+		return data.ResponseStatuses.SENT, nil
 	case pb.ResponseStatus_RESPONSE_STATUS_SEEN:
-		return data.Responsestatuses.SEEN, nil
+		return data.ResponseStatuses.SEEN, nil
 	case pb.ResponseStatus_RESPONSE_STATUS_YES:
-		return data.Responsestatuses.YES, nil
+		return data.ResponseStatuses.YES, nil
 	case pb.ResponseStatus_RESPONSE_STATUS_NO:
-		return data.Responsestatuses.NO, nil
+		return data.ResponseStatuses.NO, nil
 	case pb.ResponseStatus_RESPONSE_STATUS_MAYBE:
-		return data.Responsestatuses.MAYBE, nil
+		return data.ResponseStatuses.MAYBE, nil
 	default:
-		return data.Responsestatuses.UNKNOWN, fmt.Errorf("invalid invitation status: %v", status)
+		return data.ResponseStatuses.UNKNOWN, fmt.Errorf("invalid invitation status: %v", status)
 	}
 }
 
-func privacySettingToProtoEnum(setting data.Privacysetting) (pb.PrivacySetting, error) {
+func PrivacySettingToProtoEnum(setting data.PrivacySetting) (pb.PrivacySetting, error) {
 	switch setting {
-	case data.Privacysettings.PUBLIC:
+	case data.PrivacySettings.PUBLIC:
 		return pb.PrivacySetting_PRIVACY_SETTING_PUBLIC, nil
-	case data.Privacysettings.PRIVATE:
+	case data.PrivacySettings.PRIVATE:
 		return pb.PrivacySetting_PRIVACY_SETTING_PRIVATE, nil
 	default:
 		return 0, fmt.Errorf("invalid privacy setting: %s", setting)
 	}
 }
 
-func privacySettingFromProtoEnum(setting pb.PrivacySetting) (data.Privacysetting, error) {
+func PrivacySettingFromProtoEnum(setting pb.PrivacySetting) (data.PrivacySetting, error) {
 	switch setting {
 	case pb.PrivacySetting_PRIVACY_SETTING_PUBLIC:
-		return data.Privacysettings.PUBLIC, nil
+		return data.PrivacySettings.PUBLIC, nil
 	case pb.PrivacySetting_PRIVACY_SETTING_PRIVATE:
-		return data.Privacysettings.PRIVATE, nil
+		return data.PrivacySettings.PRIVATE, nil
 	default:
-		return data.Privacysettings.UNKNOWN, fmt.Errorf("invalid privacy setting: %v", setting)
+		return data.PrivacySettings.UNKNOWN, fmt.Errorf("invalid privacy setting: %v", setting)
 	}
 }
