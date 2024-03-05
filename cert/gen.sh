@@ -8,7 +8,7 @@ read -p "State or Province Name (full name) [New South Wales]: " state
 read -p "Locality Name (eg, city) [Sydney]: " locality
 read -p "Organization Name (eg, company) [Internet Widgits Pty Ltd]: " organization
 read -p "Organizational Unit Name [*.google.com]: " organizationalunit
-read -p "Common Name (e.g. server FQDN or YOUR name) [Gary Sanford]: " commonname
+read -p "Common Name (e.g. server FQDN or YOUR name) [example.domain.com]: " commonname
 read -p "Email Address [garysanford@amail.com]: " email
 
 # 1. Generate CA's private key and self-signed certificate
